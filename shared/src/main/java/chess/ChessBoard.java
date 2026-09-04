@@ -1,6 +1,7 @@
 package chess;
 
 import java.util.Arrays;
+import java.util.Objects;
 
 /**
  * A chessboard that can hold and rearrange chess pieces.
@@ -21,10 +22,21 @@ public class ChessBoard {
         ChessPiece.PieceType.KNIGHT,
         ChessPiece.PieceType.ROOK,
     };
-    private ChessPiece[][] board;
+    protected ChessPiece[][] board;
     
     public ChessBoard() {
         this.board = new ChessPiece[BOARD_SIZE][BOARD_SIZE];
+    }
+
+    // equals and hashcode
+    @Override public int hashCode() {
+        return Objects.hash(this.board[0][0], this.board[0][BOARD_SIZE - 1]);
+    }
+    @Override public boolean equals(Object obj) {
+        if (obj == null) return false;
+        if (obj.getClass() != this.getClass()) return false;
+        ChessBoard other = (ChessBoard)obj;
+        return Arrays.deepEquals(this.board, other.board);
     }
 
     /**
@@ -37,7 +49,7 @@ public class ChessBoard {
         // shift back one because the positions are 1-8, not 0-7
         int row = position.getRow() - 1;
         int col = position.getColumn() - 1;
-        this.board[row][col] = piece;
+        this.board[col][row] = piece;
     }
 
     /**
@@ -50,7 +62,7 @@ public class ChessBoard {
     public ChessPiece getPiece(ChessPosition position) {
         int row = position.getRow() - 1;
         int col = position.getColumn() - 1;
-        return this.board[row][col];
+        return this.board[col][row];
     }
 
     /**
