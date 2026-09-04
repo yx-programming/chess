@@ -1,5 +1,7 @@
 package chess;
 
+import java.util.Arrays;
+
 /**
  * A chessboard that can hold and rearrange chess pieces.
  * <p>
@@ -7,9 +9,22 @@ package chess;
  * signature of the existing methods.
  */
 public class ChessBoard {
-
+    private static final int BOARD_SIZE = 8;
+    // left to right, the piece layouts of the standard board for white
+    private static final ChessPiece.PieceType[] pieceLayout = {
+        ChessPiece.PieceType.ROOK,
+        ChessPiece.PieceType.KNIGHT,
+        ChessPiece.PieceType.BISHOP,
+        ChessPiece.PieceType.KING,
+        ChessPiece.PieceType.QUEEN,
+        ChessPiece.PieceType.BISHOP,
+        ChessPiece.PieceType.KNIGHT,
+        ChessPiece.PieceType.ROOK,
+    };
+    private ChessPiece[][] board;
+    
     public ChessBoard() {
-        
+        this.board = new ChessPiece[BOARD_SIZE][BOARD_SIZE];
     }
 
     /**
@@ -19,7 +34,10 @@ public class ChessBoard {
      * @param piece    the piece to add
      */
     public void addPiece(ChessPosition position, ChessPiece piece) {
-        throw new RuntimeException("Not implemented");
+        // shift back one because the positions are 1-8, not 0-7
+        int row = position.getRow() - 1;
+        int col = position.getColumn() - 1;
+        this.board[row][col] = piece;
     }
 
     /**
@@ -30,7 +48,9 @@ public class ChessBoard {
      * position
      */
     public ChessPiece getPiece(ChessPosition position) {
-        throw new RuntimeException("Not implemented");
+        int row = position.getRow() - 1;
+        int col = position.getColumn() - 1;
+        return this.board[row][col];
     }
 
     /**
@@ -38,6 +58,21 @@ public class ChessBoard {
      * (How the game of chess normally starts)
      */
     public void resetBoard() {
-        throw new RuntimeException("Not implemented");
+        // place pawns 1 row from each side
+        for (int i = 0; i < BOARD_SIZE; i++) {
+            this.board[1][i] = new ChessPiece(ChessGame.TeamColor.BLACK,
+                ChessPiece.PieceType.PAWN);
+            this.board[BOARD_SIZE - 2][i] = new ChessPiece(
+                ChessGame.TeamColor.WHITE, ChessPiece.PieceType.PAWN);
+        }
+        // place power pieces
+        for (int i = 0; i < BOARD_SIZE; i++) {
+            this.board[BOARD_SIZE - 1][i] = new ChessPiece(
+                ChessGame.TeamColor.WHITE, pieceLayout[i]);
+            // black's layout is actually mirrored from white's, although
+            // from the perspective of each player it's the same
+            this.board[0][BOARD_SIZE - 1 - i] = new ChessPiece(
+                ChessGame.TeamColor.BLACK, pieceLayout[i]);
+        }
     }
 }
