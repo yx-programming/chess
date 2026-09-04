@@ -19,13 +19,16 @@ public class ChessPiece {
     }
 
     // equality/hashcodes for use in collections
-    public int hashCode() {
+    @Override public int hashCode() {
         return Objects.hash(this.color, this.type);
     }
 
-    public boolean equals(ChessPiece other) {
+    @Override public boolean equals(Object obj) {
+        if (obj == null) return false;
+        if (obj.getClass() != this.getClass()) return false;
+        ChessPiece other = (ChessPiece)obj;
         return this.color == other.getTeamColor() &&
-            this.type == other.getTeamType();
+            this.type == other.getPieceType();
     }
 
     /**
