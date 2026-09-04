@@ -16,13 +16,13 @@ public class ChessBoard {
         ChessPiece.PieceType.ROOK,
         ChessPiece.PieceType.KNIGHT,
         ChessPiece.PieceType.BISHOP,
-        ChessPiece.PieceType.KING,
         ChessPiece.PieceType.QUEEN,
+        ChessPiece.PieceType.KING,
         ChessPiece.PieceType.BISHOP,
         ChessPiece.PieceType.KNIGHT,
         ChessPiece.PieceType.ROOK,
     };
-    protected ChessPiece[][] board;
+    private ChessPiece[][] board;
     
     public ChessBoard() {
         this.board = new ChessPiece[BOARD_SIZE][BOARD_SIZE];
@@ -36,7 +36,11 @@ public class ChessBoard {
         if (obj == null) return false;
         if (obj.getClass() != this.getClass()) return false;
         ChessBoard other = (ChessBoard)obj;
-        return Arrays.deepEquals(this.board, other.board);
+        return Arrays.deepEquals(this.board, other.getBoard());
+    }
+
+    public ChessPiece[][] getBoard() {
+        return this.board;
     }
 
     /**
@@ -47,9 +51,10 @@ public class ChessBoard {
      */
     public void addPiece(ChessPosition position, ChessPiece piece) {
         // shift back one because the positions are 1-8, not 0-7
-        int row = position.getRow() - 1;
         int col = position.getColumn() - 1;
-        this.board[col][row] = piece;
+        // flip the row so that 1 goes on the bottom
+        int row = BOARD_SIZE - position.getRow();
+        this.board[row][col] = piece;
     }
 
     /**
@@ -60,9 +65,9 @@ public class ChessBoard {
      * position
      */
     public ChessPiece getPiece(ChessPosition position) {
-        int row = position.getRow() - 1;
         int col = position.getColumn() - 1;
-        return this.board[col][row];
+        int row = BOARD_SIZE - position.getRow();
+        return this.board[row][col];
     }
 
     /**
@@ -70,21 +75,17 @@ public class ChessBoard {
      * (How the game of chess normally starts)
      */
     public void resetBoard() {
-        // place pawns 1 row from each side
-        for (int i = 0; i < BOARD_SIZE; i++) {
-            this.board[1][i] = new ChessPiece(ChessGame.TeamColor.BLACK,
-                ChessPiece.PieceType.PAWN);
-            this.board[BOARD_SIZE - 2][i] = new ChessPiece(
-                ChessGame.TeamColor.WHITE, ChessPiece.PieceType.PAWN);
-        }
-        // place power pieces
-        for (int i = 0; i < BOARD_SIZE; i++) {
-            this.board[BOARD_SIZE - 1][i] = new ChessPiece(
-                ChessGame.TeamColor.WHITE, pieceLayout[i]);
-            // black's layout is actually mirrored from white's, although
-            // from the perspective of each player it's the same
-            this.board[0][BOARD_SIZE - 1 - i] = new ChessPiece(
-                ChessGame.TeamColor.BLACK, pieceLayout[i]);
+        for (int i = 1; i <= BOARD_SIZE; i++) {
+            // place pawns 1 row from each side
+            this.addPiece(new ChessPosition(2, i), new ChessPiece(
+                ChessGame.TeamColor.WHITE, ChessPiece.PieceType.PAWN));
+            this.addPiece(new ChessPosition(BOARD_SIZE - 1, i), new ChessPiece(
+                ChessGame.TeamColor.BLACK, ChessPiece.PieceType.PAWN));
+            // power pieces
+            this.addPiece(new ChessPosition(1, i), new ChessPiece(
+                ChessGame.TeamColor.WHITE, pieceLayout[i - 1]));
+            this.addPiece(new ChessPosition(BOARD_SIZE, i), new ChessPiece(
+                ChessGame.TeamColor.BLACK, pieceLayout[i - 1]));
         }
     }
 }
