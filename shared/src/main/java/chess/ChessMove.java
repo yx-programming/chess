@@ -31,6 +31,10 @@ public class ChessMove {
             this.end.equals(other.getEndPosition()) &&
             this.promotion == other.getPromotionPiece();
     }
+    // debugging helper
+    @Override public String toString() {
+        return this.start + " -> " + this.end + " (" + this.promotion + ")";
+    }
 
     /**
      * @return ChessPosition of starting location

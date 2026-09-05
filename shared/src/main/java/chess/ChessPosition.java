@@ -29,6 +29,11 @@ public class ChessPosition {
         return this.row == other.getRow() && this.col == other.getColumn();
     }
 
+    // debugging help
+    @Override public String toString() {
+        return this.row + ", " + this.col;
+    }
+
     /**
      * @return which row this position is in
      * 1 codes for the bottom row
@@ -43,5 +48,10 @@ public class ChessPosition {
      */
     public int getColumn() {
         return this.col;
+    }
+
+    // useful for piece moverules
+    public ChessPosition withOffset(int row, int col) {
+        return new ChessPosition(this.row + row, this.col + col);
     }
 }

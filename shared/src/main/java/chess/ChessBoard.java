@@ -10,7 +10,7 @@ import java.util.Objects;
  * signature of the existing methods.
  */
 public class ChessBoard {
-    private static final int BOARD_SIZE = 8;
+    public static final int BOARD_SIZE = 8;
     // left to right, the piece layouts of the standard board for white
     private static final ChessPiece.PieceType[] pieceLayout = {
         ChessPiece.PieceType.ROOK,
@@ -87,5 +87,12 @@ public class ChessBoard {
             this.addPiece(new ChessPosition(BOARD_SIZE, i), new ChessPiece(
                 ChessGame.TeamColor.BLACK, pieceLayout[i - 1]));
         }
+    }
+
+    // useful for piece moverules
+    public boolean isValid(ChessPosition pos) {
+        int col = pos.getColumn();
+        int row = pos.getRow();
+        return col >= 1 && col <= BOARD_SIZE && row >= 1 && row <= BOARD_SIZE; 
     }
 }

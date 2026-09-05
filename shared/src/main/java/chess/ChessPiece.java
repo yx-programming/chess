@@ -16,7 +16,12 @@ public class ChessPiece {
     private ChessPiece.PieceType type;
 
     private static Map<PieceType, MoveRule> registry = Map.of(
-        PieceType.PAWN, new PawnRule()
+        PieceType.PAWN, new PawnRule(),
+        PieceType.ROOK, new PawnRule(),
+        PieceType.KNIGHT, new PawnRule(),
+        PieceType.BISHOP, new PawnRule(),
+        PieceType.QUEEN, new PawnRule(),
+        PieceType.KING, new PawnRule()
     );
 
     public ChessPiece(ChessGame.TeamColor pieceColor, ChessPiece.PieceType type) {
