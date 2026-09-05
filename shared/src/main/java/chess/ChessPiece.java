@@ -1,7 +1,9 @@
 package chess;
 
-import java.util.Objects;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Map;
+import java.util.Objects;
 
 /**
  * Represents a single chess piece
@@ -12,6 +14,10 @@ import java.util.Collection;
 public class ChessPiece {
     private ChessGame.TeamColor color;
     private ChessPiece.PieceType type;
+
+    private static Map<PieceType, MoveRule> registry = Map.of(
+        PieceType.PAWN, new PawnRule()
+    );
 
     public ChessPiece(ChessGame.TeamColor pieceColor, ChessPiece.PieceType type) {
         this.color = pieceColor;
@@ -65,6 +71,6 @@ public class ChessPiece {
      * @return Collection of valid moves
      */
     public Collection<ChessMove> pieceMoves(ChessBoard board, ChessPosition myPosition) {
-        throw new RuntimeException("Not implemented");
-    }
+        return registry.get(this.type).getMoves(board, myPosition);
+     }
 }
