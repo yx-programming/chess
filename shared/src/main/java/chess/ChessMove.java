@@ -29,7 +29,7 @@ public class ChessMove {
         ChessMove other = (ChessMove)obj;
         return this.start.equals(other.getStartPosition()) &&
             this.end.equals(other.getEndPosition()) &&
-            this.promotion.equals(other.getPromotionPiece());
+            this.promotion == other.getPromotionPiece();
     }
 
     /**
