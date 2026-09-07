@@ -19,12 +19,14 @@ public class ChessPiece {
         {-1, 0}, {-1, -1}, {0, -1}, {1, -1} };
     private static int[][] knightSlots = { {1, -2}, {2, -1}, {2, 1}, {1, 2},
         {-1, 2}, {-2, 1}, {-2, -1}, {-1, -2} };
+    private static int[][] rookSlots = { {1, 0}, {0, 1}, {-1, 0}, {0, -1} };
+    private static int[][] bishopSlots = { {1, 1}, {-1, 1}, {-1, -1}, {1, -1} };
 
     private static Map<PieceType, MoveRule> registry = Map.of(
         PieceType.PAWN, new PawnRule(),
-        PieceType.ROOK, new PawnRule(),
+        PieceType.ROOK, new LineRule(rookSlots),
         PieceType.KNIGHT, new StaticRule(knightSlots),
-        PieceType.BISHOP, new PawnRule(),
+        PieceType.BISHOP, new LineRule(bishopSlots),
         PieceType.QUEEN, new LineRule(kingQueenSlots),
         PieceType.KING, new StaticRule(kingQueenSlots)
     );
