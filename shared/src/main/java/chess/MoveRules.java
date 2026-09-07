@@ -53,22 +53,50 @@ class PawnRule implements MoveRule {
     }
 }
 
-class KingRule implements MoveRule {
+class StaticRule implements MoveRule {
+    private int[][] offsets;
+    StaticRule(int[][] offsets) {
+        this.offsets = offsets;
+    }
     @Override
     public List<ChessMove> getMoves(ChessBoard board, ChessPosition pos) {
         var moves = new ArrayList<ChessMove>();
-        int[][] offsets = { {1, 0}, {1, 1}, {0, 1}, {-1, 1}, {-1, 0}, {-1, -1},
-            {0, -1}, {1, -1} };
-        for (int[] offset : offsets) {
+        var piece = board.getPiece(pos);
+        if (piece == null) return moves;
+        for (int[] offset : this.offsets) {
             var target = pos.withOffset(offset[0], offset[1]);
             if (board.isValid(target)) {
-                var piece = board.getPiece(pos);
-                if (piece == null) return moves;
                 var otherPiece = board.getPiece(target);
                 if (otherPiece == null ||
                         otherPiece.getTeamColor() != piece.getTeamColor()) {
                     moves.add(new ChessMove(pos, target, null));
                 }
+            }
+        }
+        return moves;
+    }
+}
+
+class LineRule implements MoveRule {
+    private int[][] directions;
+    LineRule(int[][] directions) {
+        this.directions = directions;
+    }
+    @Override
+    public List<ChessMove> getMoves(ChessBoard board, ChessPosition pos) {
+        var moves = new ArrayList<ChessMove>();
+        var piece = board.getPiece(pos);
+        if (piece == null) return moves;
+        for (int[] direction : this.directions) {
+            ChessPosition target = pos.withOffset(direction[0], direction[1]);
+            while (board.isValid(target)) {
+                var otherPiece = board.getPiece(target);
+                if (otherPiece != null &&
+                    otherPiece.getTeamColor() == piece.getTeamColor()) break;
+                moves.add(new ChessMove(pos, target, null));
+                if (otherPiece != null &&
+                    otherPiece.getTeamColor() != piece.getTeamColor()) break;
+                target = target.withOffset(direction[0], direction[1]);
             }
         }
         return moves;

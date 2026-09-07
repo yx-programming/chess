@@ -15,13 +15,18 @@ public class ChessPiece {
     private ChessGame.TeamColor color;
     private ChessPiece.PieceType type;
 
+    private static int[][] kingQueenSlots = { {1, 0}, {1, 1}, {0, 1}, {-1, 1},
+        {-1, 0}, {-1, -1}, {0, -1}, {1, -1} };
+    private static int[][] knightSlots = { {1, -2}, {2, -1}, {2, 1}, {1, 2},
+        {-1, 2}, {-2, 1}, {-2, -1}, {-1, -2} };
+
     private static Map<PieceType, MoveRule> registry = Map.of(
         PieceType.PAWN, new PawnRule(),
         PieceType.ROOK, new PawnRule(),
-        PieceType.KNIGHT, new PawnRule(),
+        PieceType.KNIGHT, new StaticRule(knightSlots),
         PieceType.BISHOP, new PawnRule(),
-        PieceType.QUEEN, new PawnRule(),
-        PieceType.KING, new KingRule()
+        PieceType.QUEEN, new LineRule(kingQueenSlots),
+        PieceType.KING, new StaticRule(kingQueenSlots)
     );
 
     public ChessPiece(ChessGame.TeamColor pieceColor, ChessPiece.PieceType type) {
