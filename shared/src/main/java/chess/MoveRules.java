@@ -5,15 +5,15 @@ import java.util.List;
 
 interface MoveRule {
     List<ChessMove> getMoves(ChessBoard board, ChessPosition pos);
-    static final ChessPiece.PieceType[] promotionTypes = {
+}
+
+class PawnRule implements MoveRule {
+    private static final ChessPiece.PieceType[] promotionTypes = {
         ChessPiece.PieceType.ROOK,    
         ChessPiece.PieceType.KNIGHT,    
         ChessPiece.PieceType.BISHOP,    
         ChessPiece.PieceType.QUEEN,    
     };
-}
-
-class PawnRule implements MoveRule {
     @Override
     public List<ChessMove> getMoves(ChessBoard board, ChessPosition pos) {
         var moves = new ArrayList<ChessMove>();
@@ -32,11 +32,13 @@ class PawnRule implements MoveRule {
                         (otherPiece != null &&
                         otherPiece.getTeamColor() != piece.getTeamColor() &&
                         offset[1] != 0)) {
+                    // promove the piece if necessary
                     if (target.getRow() == finalRow) {
-                        for (var type : MoveRule.promotionTypes) {
+                        for (var type : promotionTypes) {
                             moves.add(new ChessMove(pos, target, type));
                         }
                     } else moves.add(new ChessMove(pos, target, null));
+                    // check for a 2 square jump option
                     if (offset[1] == 0 && pos.getRow() == startRow) {
                         var oneMore = target.withOffset(dir, 0);
                         if (board.isValid(oneMore) &&
@@ -46,6 +48,28 @@ class PawnRule implements MoveRule {
                     }
                 }
             }            
+        }
+        return moves;
+    }
+}
+
+class KingRule implements MoveRule {
+    @Override
+    public List<ChessMove> getMoves(ChessBoard board, ChessPosition pos) {
+        var moves = new ArrayList<ChessMove>();
+        int[][] offsets = { {1, 0}, {1, 1}, {0, 1}, {-1, 1}, {-1, 0}, {-1, -1},
+            {0, -1}, {1, -1} };
+        for (int[] offset : offsets) {
+            var target = pos.withOffset(offset[0], offset[1]);
+            if (board.isValid(target)) {
+                var piece = board.getPiece(pos);
+                if (piece == null) return moves;
+                var otherPiece = board.getPiece(target);
+                if (otherPiece == null ||
+                        otherPiece.getTeamColor() != piece.getTeamColor()) {
+                    moves.add(new ChessMove(pos, target, null));
+                }
+            }
         }
         return moves;
     }

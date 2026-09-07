@@ -21,7 +21,7 @@ public class ChessPiece {
         PieceType.KNIGHT, new PawnRule(),
         PieceType.BISHOP, new PawnRule(),
         PieceType.QUEEN, new PawnRule(),
-        PieceType.KING, new PawnRule()
+        PieceType.KING, new KingRule()
     );
 
     public ChessPiece(ChessGame.TeamColor pieceColor, ChessPiece.PieceType type) {
