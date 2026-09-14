@@ -15,11 +15,16 @@ import java.util.Objects;
 public class ChessGame {
     private TeamColor turn;
     private ChessBoard board;
+    private Map<TeamColor, ChessPiece> kings;
 
     public ChessGame() {
         turn = TeamColor.WHITE;
         board = new ChessBoard();
         board.resetBoard();
+        kings = new HashMap<TeamColor, ChessPiece>();
+        kings.put(TeamColor.WHITE, new ChessPosition(1, 5));
+        kings.put(TeamColor.BLACK, new ChessPosition(
+            ChessBoard.BOARD_SIZE, 5));
     }
 
     @Override
