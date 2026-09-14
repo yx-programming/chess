@@ -98,7 +98,14 @@ public class ChessGame {
      * @param teamColor which team to check for check
      * @return True if the specified team is in check
      */
+    // I'm taking a similar approach to what I did for moves, but in reverse
+    // We'll check all of the possible locations that the king could be hit from
+    private static int[][] offsets = { {1, -2}, {2, -1}, {2, 1}, {1, 2},
+        {-1, 2}, {-2, 1}, {-2, -1}, {-1, -2} }; // for checking knights
+    private static int[][] directions = { {1, 0}, {1, 1}, {0, 1}, {-1, 1},
+        {-1, 0}, {-1, -1}, {0, -1}, {1, -1} }; // for checking other power pieces
     public boolean isInCheck(TeamColor teamColor) {
+        
         return false;
     }
 
