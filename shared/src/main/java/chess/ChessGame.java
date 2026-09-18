@@ -113,6 +113,7 @@ public class ChessGame {
         // checking for pawns
         for (int i = -1; i <= 1; i += 2) {
             var pos = kingPos.withOffset(dir, i);
+            if (!board.isValid(pos)) continue;
             var piece = board.getPiece(pos);
             if (piece != null && piece.getTeamColor() != teamColor &&
                     piece.getPieceType() == ChessPiece.PieceType.PAWN) {
@@ -122,11 +123,26 @@ public class ChessGame {
         // knight checks
         for (var offset : offsets) {
             var pos = kingPos.withOffset(offset[0], offset[1]);
+            if (!board.isValid(pos)) continue;
             var piece = board.getPiece(pos);
             if (piece != null && piece.getTeamColor() != teamColor &&
                     piece.getPieceType() == ChessPiece.PieceType.KNIGHT) {
                 return true;
             }
+        }
+        // power piece checks
+        for (var direction : directions) {
+            var pos = kingPos.withOffset(direction[0], direction[1]);
+            if (!board.isValid(pos)) continue;
+            var piece = board.getPiece(pos);
+            if (piece == null) continue;
+            if (piece.getTeamColor() == teamColor) break;
+            if (piece.getPieceType() == ChessPiece.PieceType.KNIGHT || 
+                    piece.getPieceType() == ChessPiece.PieceType.QUEEN || 
+                    piece.getPieceType() == ChessPiece.PieceType.KING) {
+                return true;
+            }
+
         }
         return false;
     }
