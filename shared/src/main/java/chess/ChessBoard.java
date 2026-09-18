@@ -72,9 +72,14 @@ public class ChessBoard {
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        for (var row : board) {
+        sb.append("BORKED: ------BOARD-------\n");
+        for (ChessPiece[] row : this.board) {
             sb.append("BORKED: ");
-            for (var piece : row) {
+            for (ChessPiece piece : row) {
+                if (piece == null) {
+                    sb.append(' ');
+                    continue;
+                }
                 var type = piece.getPieceType();
                 char c = (type == ChessPiece.PieceType.KING) ? 'K' :
                     (type == ChessPiece.PieceType.QUEEN) ? 'Q' :
@@ -82,13 +87,14 @@ public class ChessBoard {
                     (type == ChessPiece.PieceType.ROOK) ? 'R' :
                     (type == ChessPiece.PieceType.KNIGHT) ? 'N' :
                     (type == ChessPiece.PieceType.BISHOP) ? 'B' : ' ';
-                //if (piece.getTeamColor() == ChessGame.TeamColor.BLACK) {
-                //    c += 'a' - 'A';
-                //}
+                if (piece.getTeamColor() == ChessGame.TeamColor.BLACK) {
+                    c += 'a' - 'A';
+                }
                 sb.append(c);
             }
             sb.append('\n');
         }
+        sb.append("BORKED: ------ENDBOARD-------");
         return sb.toString();
     }
 
