@@ -1,6 +1,8 @@
 package chess;
 
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
 
 /**
@@ -23,9 +25,11 @@ public class ChessBoard {
         ChessPiece.PieceType.ROOK,
     };
     private ChessPiece[][] board;
+    private Map<ChessGame.TeamColor, ChessPosition> kings;
     
     public ChessBoard() {
         this.board = new ChessPiece[BOARD_SIZE][BOARD_SIZE];
+        kings = new HashMap<ChessGame.TeamColor, ChessPosition>();
     }
 
     // equals and hashcode
@@ -55,6 +59,37 @@ public class ChessBoard {
         // flip the row so that 1 goes on the bottom
         int row = BOARD_SIZE - position.getRow();
         this.board[row][col] = piece;
+        if (piece == null) return;
+        if (piece.getPieceType() == ChessPiece.PieceType.KING) {
+            kings.put(piece.getTeamColor(), position);
+        }
+    }
+
+    public ChessPosition getKing(ChessGame.TeamColor color) {
+        return kings.get(color);
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        for (var row : board) {
+            sb.append("BORKED: ");
+            for (var piece : row) {
+                var type = piece.getPieceType();
+                char c = (type == ChessPiece.PieceType.KING) ? 'K' :
+                    (type == ChessPiece.PieceType.QUEEN) ? 'Q' :
+                    (type == ChessPiece.PieceType.PAWN) ? 'P' :
+                    (type == ChessPiece.PieceType.ROOK) ? 'R' :
+                    (type == ChessPiece.PieceType.KNIGHT) ? 'N' :
+                    (type == ChessPiece.PieceType.BISHOP) ? 'B' : ' ';
+                //if (piece.getTeamColor() == ChessGame.TeamColor.BLACK) {
+                //    c += 'a' - 'A';
+                //}
+                sb.append(c);
+            }
+            sb.append('\n');
+        }
+        return sb.toString();
     }
 
     /**
@@ -67,7 +102,7 @@ public class ChessBoard {
     public ChessPiece getPiece(ChessPosition position) {
         int col = position.getColumn() - 1;
         int row = BOARD_SIZE - position.getRow();
-        return this.board[row][col];
+        return isValid(position) ? this.board[row][col] : null;
     }
 
     /**

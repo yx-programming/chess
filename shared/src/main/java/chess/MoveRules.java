@@ -1,10 +1,10 @@
 package chess;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Collection;
+import java.util.HashSet;
 
 interface MoveRule {
-    List<ChessMove> getMoves(ChessBoard board, ChessPosition pos);
+    Collection<ChessMove> getMoves(ChessBoard board, ChessPosition pos);
 }
 
 class PawnRule implements MoveRule {
@@ -15,8 +15,8 @@ class PawnRule implements MoveRule {
         ChessPiece.PieceType.QUEEN,    
     };
     @Override
-    public List<ChessMove> getMoves(ChessBoard board, ChessPosition pos) {
-        var moves = new ArrayList<ChessMove>();
+    public Collection<ChessMove> getMoves(ChessBoard board, ChessPosition pos) {
+        var moves = new HashSet<ChessMove>();
         final ChessPiece piece = board.getPiece(pos);
         if (piece == null) return moves;
         boolean isWhite = piece.getTeamColor() == ChessGame.TeamColor.WHITE;
@@ -59,8 +59,8 @@ class StaticRule implements MoveRule {
         this.offsets = offsets;
     }
     @Override
-    public List<ChessMove> getMoves(ChessBoard board, ChessPosition pos) {
-        var moves = new ArrayList<ChessMove>();
+    public Collection<ChessMove> getMoves(ChessBoard board, ChessPosition pos) {
+        var moves = new HashSet<ChessMove>();
         var piece = board.getPiece(pos);
         if (piece == null) return moves;
         for (int[] offset : this.offsets) {
@@ -83,8 +83,8 @@ class LineRule implements MoveRule {
         this.directions = directions;
     }
     @Override
-    public List<ChessMove> getMoves(ChessBoard board, ChessPosition pos) {
-        var moves = new ArrayList<ChessMove>();
+    public Collection<ChessMove> getMoves(ChessBoard board, ChessPosition pos) {
+        var moves = new HashSet<ChessMove>();
         var piece = board.getPiece(pos);
         if (piece == null) return moves;
         for (int[] direction : this.directions) {

@@ -3,6 +3,7 @@ package chess;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Objects;
 
@@ -15,15 +16,11 @@ import java.util.Objects;
 public class ChessGame {
     private TeamColor turn;
     private ChessBoard board;
-    private Map<TeamColor, ChessPosition> kings;
 
     public ChessGame() {
         turn = TeamColor.WHITE;
         board = new ChessBoard();
         board.resetBoard();
-        kings = new HashMap<TeamColor, ChessPosition>();
-        kings.put(TeamColor.WHITE, new ChessPosition(1, 5));
-        kings.put(TeamColor.BLACK, new ChessPosition(ChessBoard.BOARD_SIZE, 5));
     }
 
     @Override
@@ -63,6 +60,19 @@ public class ChessGame {
         BLACK
     }
 
+    // we put this in a function because it seems cleaner than replicating the
+    // logic in both functions
+    private void movePiece(ChessMove move) {
+        var start = move.getStartPosition();
+        var end = move.getEndPosition();
+
+        var piece = board.getPiece(start);
+        board.addPiece(end, move.getPromotionPiece() != null ?
+            new ChessPiece(piece.getTeamColor(),
+            move.getPromotionPiece()) : piece);
+        board.addPiece(start, null);
+    }
+
     /**
      * Gets all valid moves for a piece at the given location
      *
@@ -73,7 +83,22 @@ public class ChessGame {
     public Collection<ChessMove> validMoves(ChessPosition startPosition) {
         var piece = board.getPiece(startPosition);
         if (piece == null) return null;
-        return piece.pieceMoves(board, startPosition);
+        var moves = piece.pieceMoves(board, startPosition);
+        var color = piece.getTeamColor();
+        var valid = new HashSet<ChessMove>();
+        for (var move : moves) {
+            // check each move for validity
+            var possibleCapture = board.getPiece(move.getEndPosition());
+            var check = board.getKing(color);
+            movePiece(move);
+            if (!isInCheck(color)) {
+                valid.add(move);
+            }
+            movePiece(move.reverse());
+            // restore any pawn state or potential captures from the move
+            board.addPiece(move.getEndPosition(), possibleCapture);
+        }
+        return valid;
     }
 
     /**
@@ -84,17 +109,19 @@ public class ChessGame {
      */
     public void makeMove(ChessMove move) throws InvalidMoveException {
         // TODO: check move validity
+        if (move == null) throw new InvalidMoveException();
+        if (!(board.isValid(move.getStartPosition()) &&
+                board.isValid(move.getEndPosition())))
+            throw new InvalidMoveException();
         var start = move.getStartPosition();
-        var end = move.getEndPosition();
-
-        var piece = board.getPiece(start);
-        board.addPiece(start, null);
-        board.addPiece(end, move.getPromotionPiece() != null ?
-            new ChessPiece(piece.getTeamColor(),
-            move.getPromotionPiece()) : piece);
-        if (piece.getPieceType() == ChessPiece.PieceType.KING) {
-            kings.put(piece.getTeamColor(), end);
-        }
+        var moves = validMoves(start);
+        if (moves == null) throw new InvalidMoveException();
+        var color = board.getPiece(start).getTeamColor();
+        if (color != turn) throw new InvalidMoveException();
+        if (moves.contains(move))
+            movePiece(move);
+        else throw new InvalidMoveException();
+        turn = turn == TeamColor.WHITE ? TeamColor.BLACK : TeamColor.WHITE;
     }
 
     /**
@@ -110,7 +137,7 @@ public class ChessGame {
     private static int[][] directions = { {1, 0}, {1, 1}, {0, 1}, {-1, 1},
         {-1, 0}, {-1, -1}, {0, -1}, {1, -1} }; // for checking other power pieces
     public boolean isInCheck(TeamColor teamColor) {
-        var kingPos = kings.get(teamColor);
+        var kingPos = board.getKing(teamColor);
         int dir = teamColor == TeamColor.WHITE ? 1 : -1;        
         // checking for pawns
         for (int i = -1; i <= 1; i += 2) {
@@ -135,22 +162,24 @@ public class ChessGame {
         // power piece checks
         for (var direction : directions) {
             var pos = kingPos.withOffset(direction[0], direction[1]);
+            // we check the king because we also want to check if the
+            // position would be valid if a king moved there
+            // (since kings can't be near each other)
+            var possibleKing = board.getPiece(pos);
+            if (possibleKing != null && possibleKing.getPieceType() ==
+                ChessPiece.PieceType.KING) return true;
+            // the king can only move one space, but everything else moves more
             while (board.isValid(pos)) {
                 var piece = board.getPiece(pos);
                 pos = pos.withOffset(direction[0], direction[1]);
                 if (piece == null) continue;
                 if (piece.getTeamColor() == teamColor) break;
-                // we check the king because we also want to check if the
-                // position would be valid if a king moved there
-                // (since kings can't be near each other)
-                if (piece.getPieceType() == ChessPiece.PieceType.KNIGHT || 
+                if (piece.getPieceType() == ChessPiece.PieceType.BISHOP || 
                         piece.getPieceType() == ChessPiece.PieceType.QUEEN || 
-                        piece.getPieceType() == ChessPiece.PieceType.ROOK ||
-                        piece.getPieceType() == ChessPiece.PieceType.KING) {
+                        piece.getPieceType() == ChessPiece.PieceType.ROOK) {
                     return true;
                 }
            }
-
         }
         return false;
     }
@@ -162,7 +191,8 @@ public class ChessGame {
      * @return True if the specified team is in checkmate
      */
     public boolean isInCheckmate(TeamColor teamColor) {
-        return false;
+        return isInCheck(teamColor) &&
+            validMoves(board.getKing(teamColor)).size() == 0;
     }
 
     /**

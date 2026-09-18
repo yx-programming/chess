@@ -59,4 +59,10 @@ public class ChessMove {
     public ChessPiece.PieceType getPromotionPiece() {
         return this.promotion;
     }
+
+    // useful when we want to test a move
+    public ChessMove reverse() {
+        return new ChessMove(end, start, promotion != null ?
+            ChessPiece.PieceType.PAWN : null);
+    }
 }
