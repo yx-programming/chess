@@ -135,15 +135,21 @@ public class ChessGame {
         // power piece checks
         for (var direction : directions) {
             var pos = kingPos.withOffset(direction[0], direction[1]);
-            if (!board.isValid(pos)) continue;
-            var piece = board.getPiece(pos);
-            if (piece == null) continue;
-            if (piece.getTeamColor() == teamColor) break;
-            if (piece.getPieceType() == ChessPiece.PieceType.KNIGHT || 
-                    piece.getPieceType() == ChessPiece.PieceType.QUEEN || 
-                    piece.getPieceType() == ChessPiece.PieceType.KING) {
-                return true;
-            }
+            while (board.isValid(pos)) {
+                var piece = board.getPiece(pos);
+                pos = pos.withOffset(direction[0], direction[1]);
+                if (piece == null) continue;
+                if (piece.getTeamColor() == teamColor) break;
+                // we check the king because we also want to check if the
+                // position would be valid if a king moved there
+                // (since kings can't be near each other)
+                if (piece.getPieceType() == ChessPiece.PieceType.KNIGHT || 
+                        piece.getPieceType() == ChessPiece.PieceType.QUEEN || 
+                        piece.getPieceType() == ChessPiece.PieceType.ROOK ||
+                        piece.getPieceType() == ChessPiece.PieceType.KING) {
+                    return true;
+                }
+           }
 
         }
         return false;
