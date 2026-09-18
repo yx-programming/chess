@@ -89,7 +89,9 @@ public class ChessGame {
 
         var piece = board.getPiece(start);
         board.addPiece(start, null);
-        board.addPiece(end, piece);
+        board.addPiece(end, move.getPromotionPiece() != null ?
+            new ChessPiece(piece.getTeamColor(),
+            move.getPromotionPiece()) : piece);
         if (piece.getPieceType() == ChessPiece.PieceType.KING) {
             kings.put(piece.getTeamColor(), end);
         }
