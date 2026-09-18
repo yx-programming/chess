@@ -119,6 +119,15 @@ public class ChessGame {
                 return true;
             }
         }
+        // knight checks
+        for (var offset : offsets) {
+            var pos = kingPos.withOffset(offset[0], offset[1]);
+            var piece = board.getPiece(pos);
+            if (piece != null && piece.getTeamColor() != teamColor &&
+                    piece.getPieceType() == ChessPiece.PieceType.KNIGHT) {
+                return true;
+            }
+        }
         return false;
     }
 
