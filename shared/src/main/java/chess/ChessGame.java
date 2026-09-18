@@ -15,16 +15,15 @@ import java.util.Objects;
 public class ChessGame {
     private TeamColor turn;
     private ChessBoard board;
-    private Map<TeamColor, ChessPiece> kings;
+    private Map<TeamColor, ChessPosition> kings;
 
     public ChessGame() {
         turn = TeamColor.WHITE;
         board = new ChessBoard();
         board.resetBoard();
-        kings = new HashMap<TeamColor, ChessPiece>();
+        kings = new HashMap<TeamColor, ChessPosition>();
         kings.put(TeamColor.WHITE, new ChessPosition(1, 5));
-        kings.put(TeamColor.BLACK, new ChessPosition(
-            ChessBoard.BOARD_SIZE, 5));
+        kings.put(TeamColor.BLACK, new ChessPosition(ChessBoard.BOARD_SIZE, 5));
     }
 
     @Override
@@ -37,7 +36,7 @@ public class ChessGame {
 
     @Override
     public int hashCode() {
-        return Objects.hash(turn, board, kings);
+        return Objects.hash(turn, board, turn);
     }
 
     /**
@@ -72,8 +71,9 @@ public class ChessGame {
      * startPosition
      */
     public Collection<ChessMove> validMoves(ChessPosition startPosition) {
-        var moves = new ArrayList<ChessMove>();
-        return moves;
+        var piece = board.getPiece(startPosition);
+        if (piece == null) return null;
+        return piece.pieceMoves(board, startPosition);
     }
 
     /**
@@ -88,8 +88,11 @@ public class ChessGame {
         var end = move.getEndPosition();
 
         var piece = board.getPiece(start);
-        board.setPiece(start, null);
-        board.setPiece(end, piece);
+        board.addPiece(start, null);
+        board.addPiece(end, piece);
+        if (piece.getPieceType() == ChessPiece.PieceType.KING) {
+            kings.put(piece.getTeamColor(), end);
+        }
     }
 
     /**
@@ -105,7 +108,17 @@ public class ChessGame {
     private static int[][] directions = { {1, 0}, {1, 1}, {0, 1}, {-1, 1},
         {-1, 0}, {-1, -1}, {0, -1}, {1, -1} }; // for checking other power pieces
     public boolean isInCheck(TeamColor teamColor) {
-        
+        var kingPos = kings.get(teamColor);
+        int dir = teamColor == TeamColor.WHITE ? 1 : -1;        
+        // checking for pawns
+        for (int i = -1; i <= 1; i += 2) {
+            var pos = kingPos.withOffset(dir, i);
+            var piece = board.getPiece(pos);
+            if (piece != null && piece.getTeamColor() != teamColor &&
+                    piece.getPieceType() == ChessPiece.PieceType.PAWN) {
+                return true;
+            }
+        }
         return false;
     }
 
