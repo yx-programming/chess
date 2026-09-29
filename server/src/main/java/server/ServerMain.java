@@ -7,6 +7,6 @@ public class ServerMain {
         var port = 8080;
         var server = new Server();
         server.run(port);
-        System.out.println("Okay 240 Chess Server: " + port);
+        System.out.println("240 Chess Server Started on Port " + port);
     }
 }
