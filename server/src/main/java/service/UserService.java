@@ -13,4 +13,6 @@ public class UserService {
     public void newUser(UserData user) throws DataAccessException {
         userData.insertUser(user);
     }
+
+    protected UserDAO getUserData() { return userData; }
 }
