@@ -12,8 +12,9 @@ public class MemUserDAO implements UserDAO {
     }
 
     public void insertUser(UserData user) throws DataAccessException {
-        if (getUser(user.username()) != null)
-            throw new DataAccessException("AlreadyTaken");
+        if (getUser(user.username()) != null) {
+            throw new DataAccessException("already taken");
+        }
         users.put(user.username(), user);
     }
 
