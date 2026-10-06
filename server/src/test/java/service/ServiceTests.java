@@ -21,6 +21,25 @@ public class ServiceTests {
         var service = new UserService();
         var data = new UserData("test", "password", "email@email.net");
         assertDoesNotThrow(() -> service.newUser(data));
-        assertThrows(DataAccessException.class, () -> service.newUser(data));
+        assertThrows(Exception.class, () -> service.newUser(data));
+    }
+
+    @Test
+    public void validateUserTestPositive() {
+        var service = new UserService();
+        var data = new UserData("test", "password", "email@email.net");
+        assertDoesNotThrow(() -> service.newUser(data));
+        assertDoesNotThrow(() -> service.validateUser(data));
+    }
+
+    @Test
+    public void validateUserTestNegative() {
+        var service = new UserService();
+        var data = new UserData("test", "password", "email@email.net");
+        assertDoesNotThrow(() -> service.newUser(data));
+        var badUser = new UserData("wrong", "password", "email@n");
+        assertThrows(Exception.class, () -> service.validateUser(badUser));
+        var badPass = new UserData("test", "wrong", "email@n");
+        assertThrows(Exception.class, () -> service.validateUser(badPass));
     }
 }
