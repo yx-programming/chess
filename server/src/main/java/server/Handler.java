@@ -47,7 +47,30 @@ public class Handler {
     }
 
     public void loginEndpoint(Context context) {
-
+        context.contentType("application/json");
+        UserData body = new Gson().fromJson(context.body(), UserData.class);
+        try {
+            if (body.username() == null || body.password() == null) {
+                throw new Exception("bad request");
+            }
+            userService.validateUser(body);
+            context.status(200);
+            String jsonResult = new Gson().toJson(
+                authService.newAuth(body.username()));
+            context.result(jsonResult);
+        } catch (Exception e) {
+            String errString = e.getMessage();
+            if (errString.equals("unauthorized")) {
+                context.status(401);
+            } else if (errString.equals("bad request")) {
+                context.status(400);
+            } else {
+                context.status(500);
+            }
+            String jsonNames = new Gson().toJson(Map.of("message",
+                "Error: " + e.getMessage()));
+            context.result(jsonNames);
+        }
     }
 
     public void logoutEndpoint(Context context) {

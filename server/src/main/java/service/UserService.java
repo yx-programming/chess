@@ -20,10 +20,8 @@ public class UserService {
 
     public void validateUser(UserData user) throws Exception {
         UserData loginInfo = userData.getUser(user.username());
-        if (loginInfo == null) {
-            throw new Exception("user not in database");
-        }
-        if (loginInfo.password() != user.password()) {
+        if (loginInfo == null ||
+                !loginInfo.password().equals(user.password())) {
             throw new Exception("unauthorized");
         }
     }
