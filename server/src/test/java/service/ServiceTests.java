@@ -42,4 +42,26 @@ public class ServiceTests {
         var badPass = new UserData("test", "wrong", "email@n");
         assertThrows(Exception.class, () -> service.validateUser(badPass));
     }
+
+    @Test
+    public void newAuthTestPositive() {
+        var service = new AuthService();
+        assertDoesNotThrow(() -> service.newAuth("test"));
+    }
+
+    @Test
+    public void getUsernameFromAuthTokenTestPositive() {
+        var auth = new AuthService();
+        var token = auth.newAuth("test");
+        assertDoesNotThrow(() -> assertTrue(
+            auth.getUsernameFromAuthToken(token.authToken()) == token.username()));
+    }
+
+    @Test
+    public void getUsernameFromAuthTokenTestNegative() {
+        var auth = new AuthService();
+        var token = auth.newAuth("test");        
+        assertThrows(Exception.class,
+            () -> auth.getUsernameFromAuthToken("bad token"));
+    }
 }
