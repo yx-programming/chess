@@ -50,18 +50,25 @@ public class ServiceTests {
     }
 
     @Test
-    public void getUsernameFromAuthTokenTestPositive() {
+    public void getAuthFromTokenTestPositive() {
         var auth = new AuthService();
         var token = auth.newAuth("test");
         assertDoesNotThrow(() -> assertTrue(
-            auth.getUsernameFromAuthToken(token.authToken()) == token.username()));
+            auth.getAuthFromToken(token.authToken()).equals(token)));
     }
 
     @Test
-    public void getUsernameFromAuthTokenTestNegative() {
+    public void getUAuthFromTokenTestNegative() {
         var auth = new AuthService();
         var token = auth.newAuth("test");        
         assertThrows(Exception.class,
-            () -> auth.getUsernameFromAuthToken("bad token"));
+            () -> auth.getAuthFromToken("bad token"));
+    }
+
+    @Test
+    public void removeAuthTestPositive() {
+        var auth = new AuthService();
+        var token = auth.newAuth("uhhh");
+        assertDoesNotThrow(() -> auth.removeAuth(token));
     }
 }

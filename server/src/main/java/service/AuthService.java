@@ -14,12 +14,16 @@ public class AuthService {
         return auth.newAuth(username);
     }
 
-    public String getUsernameFromAuthToken(String authToken) throws Exception {
+    public AuthData getAuthFromToken(String authToken) throws Exception {
         AuthData auth = this.auth.getAuth(authToken);
         if (auth == null) {
             throw new Exception("unauthorized");
         }
 
-        return auth.username();
+        return auth;
+    }
+
+    public void removeAuth(AuthData authData) {
+        auth.removeAuth(authData);
     }
 }
