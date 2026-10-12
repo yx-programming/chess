@@ -74,7 +74,26 @@ public class Handler {
     }
 
     public void logoutEndpoint(Context context) {
-
+        context.contentType("application/json");
+        String authToken = context.header("authorization");
+        try {
+            var auth = authService.getAuthFromToken(authToken);
+            authService.removeAuth(auth);
+            context.status(200);
+            context.result("{}");
+        } catch (Exception e) {
+            String errString = e.getMessage();
+            if (errString.equals("unauthorized")) {
+                context.status(401);
+            } else if (errString.equals("bad request")) {
+                context.status(400);
+            } else {
+                context.status(500);
+            }
+            String jsonNames = new Gson().toJson(Map.of("message",
+                "Error: " + e.getMessage()));
+            context.result(jsonNames);
+        }
     }
 
     public void listGamesEndpoint(Context context) {

@@ -23,7 +23,7 @@ public class MemAuthDAO implements AuthDAO {
     }
 
     public void removeAuth(AuthData auth) {
-        authMap.remove(auth);
+        authMap.remove(auth.authToken());
     }
 
     public void clear() {
