@@ -1,7 +1,6 @@
 package chess;
 
-import java.util.Collection;
-import java.util.HashSet;
+import java.util.*;
 
 interface MoveRule {
     Collection<ChessMove> getMoves(ChessBoard board, ChessPosition pos);
@@ -35,12 +34,10 @@ class PawnRule implements MoveRule {
                         otherPiece.getTeamColor() != piece.getTeamColor() &&
                         offset[1] != 0)) {
                     // promove the piece if necessary
-                    if (target.getRow() == finalRow) {
-                        for (var type : PROMOTION_TYPES) {
-                            moves.add(new ChessMove(pos, target, type));
-                        }
-                    } else {
-                        moves.add(new ChessMove(pos, target, null));
+                    var promotionList = (target.getRow() == finalRow) ?
+                        PROMOTION_TYPES : new ChessPiece.PieceType[] { null };
+                    for (var type : promotionList) {
+                        moves.add(new ChessMove(pos, target, type));
                     }
                     // check for a 2 square jump option
                     if (offset[1] == 0 && pos.getRow() == startRow) {
@@ -99,12 +96,14 @@ class LineRule implements MoveRule {
             while (board.isValid(target)) {
                 var otherPiece = board.getPiece(target);
                 if (otherPiece != null &&
-                        otherPiece.getTeamColor() == piece.getTeamColor())
+                        otherPiece.getTeamColor() == piece.getTeamColor()) {
                     break;
+                }
                 moves.add(new ChessMove(pos, target, null));
                 if (otherPiece != null &&
-                        otherPiece.getTeamColor() != piece.getTeamColor())
+                        otherPiece.getTeamColor() != piece.getTeamColor()) {
                     break;
+                }
                 target = target.withOffset(direction[0], direction[1]);
             }
         }
