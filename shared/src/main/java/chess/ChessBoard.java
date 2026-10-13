@@ -14,7 +14,7 @@ import java.util.Objects;
 public class ChessBoard {
     public static final int BOARD_SIZE = 8;
     // left to right, the piece layouts of the standard board for white
-    private static final ChessPiece.PieceType[] pieceLayout = {
+    private static final ChessPiece.PieceType[] PIECE_LAYOUT = {
         ChessPiece.PieceType.ROOK,
         ChessPiece.PieceType.KNIGHT,
         ChessPiece.PieceType.BISHOP,
@@ -124,9 +124,9 @@ public class ChessBoard {
                 ChessGame.TeamColor.BLACK, ChessPiece.PieceType.PAWN));
             // power pieces
             this.addPiece(new ChessPosition(1, i), new ChessPiece(
-                ChessGame.TeamColor.WHITE, pieceLayout[i - 1]));
+                ChessGame.TeamColor.WHITE, PIECE_LAYOUT[i - 1]));
             this.addPiece(new ChessPosition(BOARD_SIZE, i), new ChessPiece(
-                ChessGame.TeamColor.BLACK, pieceLayout[i - 1]));
+                ChessGame.TeamColor.BLACK, PIECE_LAYOUT[i - 1]));
         }
     }
 

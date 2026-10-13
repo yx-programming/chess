@@ -24,8 +24,12 @@ public class ChessMove {
         return Objects.hash(this.start, this.end, this.promotion);
     }
     @Override public boolean equals(Object obj) {
-        if (obj == null) return false;
-        if (obj.getClass() != this.getClass()) return false;
+        if (obj == null) {
+            return false;
+        }
+        if (obj.getClass() != this.getClass()) {
+            return false;
+        }
         ChessMove other = (ChessMove)obj;
         return this.start.equals(other.getStartPosition()) &&
             this.end.equals(other.getEndPosition()) &&

@@ -8,11 +8,11 @@ interface MoveRule {
 }
 
 class PawnRule implements MoveRule {
-    private static final ChessPiece.PieceType[] promotionTypes = {
-        ChessPiece.PieceType.ROOK,    
-        ChessPiece.PieceType.KNIGHT,    
-        ChessPiece.PieceType.BISHOP,    
-        ChessPiece.PieceType.QUEEN,    
+    private static final ChessPiece.PieceType[] PROMOTION_TYPES = {
+        ChessPiece.PieceType.ROOK,
+        ChessPiece.PieceType.KNIGHT,
+        ChessPiece.PieceType.BISHOP,
+        ChessPiece.PieceType.QUEEN,
     };
     @Override
     public Collection<ChessMove> getMoves(ChessBoard board, ChessPosition pos) {
@@ -34,7 +34,7 @@ class PawnRule implements MoveRule {
                         offset[1] != 0)) {
                     // promove the piece if necessary
                     if (target.getRow() == finalRow) {
-                        for (var type : promotionTypes) {
+                        for (var type : PROMOTION_TYPES) {
                             moves.add(new ChessMove(pos, target, type));
                         }
                     } else moves.add(new ChessMove(pos, target, null));

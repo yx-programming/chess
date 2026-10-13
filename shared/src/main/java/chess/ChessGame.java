@@ -25,8 +25,12 @@ public class ChessGame {
 
     @Override
     public boolean equals(Object obj) {
-        if (obj == null) return false;
-        if (!(obj instanceof ChessGame)) return false;
+        if (obj == null) {
+            return false;
+        }
+        if (!(obj instanceof ChessGame)) {
+            return false;
+        }
         ChessGame other = (ChessGame)obj;
         return board.equals(other.board) && turn == other.turn;
     }
@@ -82,7 +86,9 @@ public class ChessGame {
      */
     public Collection<ChessMove> validMoves(ChessPosition startPosition) {
         var piece = board.getPiece(startPosition);
-        if (piece == null) return null;
+        if (piece == null) {
+            return null;
+        }
         var moves = piece.pieceMoves(board, startPosition);
         var color = piece.getTeamColor();
         var valid = new HashSet<ChessMove>();
@@ -107,19 +113,27 @@ public class ChessGame {
      * @throws InvalidMoveException if move is invalid
      */
     public void makeMove(ChessMove move) throws InvalidMoveException {
-        // TODO: check move validity
-        if (move == null) throw new InvalidMoveException("empty move");
+        if (move == null) {
+            throw new InvalidMoveException("empty move");
+        }
         if (!(board.isValid(move.getStartPosition()) &&
-                board.isValid(move.getEndPosition())))
+                board.isValid(move.getEndPosition()))) {
             throw new InvalidMoveException("move out of bounds");
+        }
         var start = move.getStartPosition();
         var moves = validMoves(start);
-        if (moves == null) throw new InvalidMoveException("no valid moves");
+        if (moves == null) {
+            throw new InvalidMoveException("no valid moves");
+        }
         var color = board.getPiece(start).getTeamColor();
-        if (color != turn) throw new InvalidMoveException("not your turn");
-        if (moves.contains(move))
+        if (color != turn) {
+            throw new InvalidMoveException("not your turn");
+        }
+        if (moves.contains(move)) {
             movePiece(move);
-        else throw new InvalidMoveException("illegal move");
+        } else {
+            throw new InvalidMoveException("illegal move");
+        }
         turn = turn == TeamColor.WHITE ? TeamColor.BLACK : TeamColor.WHITE;
     }
 
