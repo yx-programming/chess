@@ -40,11 +40,9 @@ class PawnRule implements MoveRule {
                         moves.add(new ChessMove(pos, target, type));
                     }
                     // check for a 2 square jump option
-                    if (offset[1] == 0 && pos.getRow() == startRow) {
-                        var oneMore = target.withOffset(dir, 0);
-                        if (board.isValid(oneMore) && board.getPiece(oneMore) == null) {
-                            moves.add(new ChessMove(pos, oneMore, null));
-                        }
+                    var oneMore = target.withOffset(dir, 0);
+                    if (offset[1] == 0 && pos.getRow() == startRow && board.isValid(oneMore) && board.getPiece(oneMore) == null) {
+                        moves.add(new ChessMove(pos, oneMore, null));
                     }
                 }
             }            
