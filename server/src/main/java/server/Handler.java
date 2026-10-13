@@ -6,6 +6,7 @@ import com.google.gson.*;
 import io.javalin.*;
 import io.javalin.http.*;
 
+import chess.*;
 import dataaccess.*;
 import model.*;
 import service.*;
@@ -151,7 +152,40 @@ public class Handler {
         }
     }
 
+    private record JoinGameRequest(String playerColor, int gameID) {}
+
     public void joinGameEndpoint(Context context) {
+        context.contentType("application/json");
+        String authToken = context.header("authorization");
+        try {
+            var auth = authService.getAuthFromToken(authToken);
+            JoinGameRequest game = new Gson().fromJson(context.body(),
+                JoinGameRequest.class);
+            if (game == null || (!"WHITE".equals(game.playerColor()) &&
+                    !"BLACK".equals(game.playerColor())) ||
+                    game.gameID() <= 0) {
+                throw new Exception("bad request");
+            }
+            gameService.joinGame(game.gameID,
+                game.playerColor().equals("WHITE") ? ChessGame.TeamColor.WHITE :
+                ChessGame.TeamColor.BLACK, auth.username());
+            context.status(200);
+            context.result("{}");
+        } catch (Exception e) {
+            String errString = e.getMessage();
+            if (errString.equals("unauthorized")) {
+                context.status(401);
+            } else if (errString.equals("bad request")) {
+                context.status(400);
+            } else if (errString.equals("already taken")) {
+                context.status(403);
+            } else {
+                context.status(500);
+            }
+            String jsonNames = new Gson().toJson(Map.of("message",
+                "Error: " + e.getMessage()));
+            context.result(jsonNames);
+        }
     }
 
     public void clearDBEndpoint(Context context) {
