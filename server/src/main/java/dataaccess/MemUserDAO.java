@@ -18,10 +18,6 @@ public class MemUserDAO implements UserDAO {
         users.put(user.username(), user);
     }
 
-    public void deleteUser(UserData user) {
-        users.remove(user.username());
-    }
-
     public UserData getUser(String username) {
         return users.get(username);
     }

@@ -37,8 +37,12 @@ public class ChessBoard {
         return Objects.hash(this.board[0][0], this.board[0][BOARD_SIZE - 1]);
     }
     @Override public boolean equals(Object obj) {
-        if (obj == null) return false;
-        if (obj.getClass() != this.getClass()) return false;
+        if (obj == null) {
+            return false;
+        }
+        if (obj.getClass() != this.getClass()) {
+            return false;
+        }
         ChessBoard other = (ChessBoard)obj;
         return Arrays.deepEquals(this.board, other.getBoard());
     }
@@ -59,7 +63,9 @@ public class ChessBoard {
         // flip the row so that 1 goes on the bottom
         int row = BOARD_SIZE - position.getRow();
         this.board[row][col] = piece;
-        if (piece == null) return;
+        if (piece == null) {
+            return;
+        }
         if (piece.getPieceType() == ChessPiece.PieceType.KING) {
             kings.put(piece.getTeamColor(), position);
         }

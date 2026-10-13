@@ -23,8 +23,12 @@ public class ChessPosition {
     }
 
     @Override public boolean equals(Object obj) {
-        if (obj == null) return false;
-        if (obj.getClass() != this.getClass()) return false;
+        if (obj == null) {
+            return false;
+        }
+        if (obj.getClass() != this.getClass()) {
+            return false;
+        }
         ChessPosition other = (ChessPosition)obj;
         return this.row == other.getRow() && this.col == other.getColumn();
     }

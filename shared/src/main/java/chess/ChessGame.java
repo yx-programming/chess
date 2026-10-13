@@ -152,13 +152,17 @@ public class ChessGame {
     private Collection<ChessPosition> getThreats(ChessPosition piecePos) {
         var threats = new HashSet<ChessPosition>();
         var startPiece = board.getPiece(piecePos);
-        if (startPiece == null) return threats;
+        if (startPiece == null) {
+            return threats;
+        }
         var teamColor = startPiece.getTeamColor();
         int dir = teamColor == TeamColor.WHITE ? 1 : -1;       
         // checking for pawns
         for (int i = -1; i <= 1; i += 2) {
             var pos = piecePos.withOffset(dir, i);
-            if (!board.isValid(pos)) continue;
+            if (!board.isValid(pos)) {
+                continue;
+            }
             var piece = board.getPiece(pos);
             if (piece != null && piece.getTeamColor() != teamColor &&
                     piece.getPieceType() == ChessPiece.PieceType.PAWN) {
@@ -168,7 +172,9 @@ public class ChessGame {
         // knight checks
         for (var offset : offsets) {
             var pos = piecePos.withOffset(offset[0], offset[1]);
-            if (!board.isValid(pos)) continue;
+            if (!board.isValid(pos)) {
+                continue;
+            }
             var piece = board.getPiece(pos);
             if (piece != null && piece.getTeamColor() != teamColor &&
                     piece.getPieceType() == ChessPiece.PieceType.KNIGHT) {
@@ -183,7 +189,9 @@ public class ChessGame {
             // (since kings can't be near each other)
             var possibleKing = board.getPiece(pos);
             if (possibleKing != null && possibleKing.getPieceType() ==
-                ChessPiece.PieceType.KING) threats.add(pos);
+                    ChessPiece.PieceType.KING) {
+                threats.add(pos);
+            }
             // the king can only move one space, but everything else moves more
             while (board.isValid(pos)) {
                 var piece = board.getPiece(pos);
@@ -192,7 +200,9 @@ public class ChessGame {
                     continue;
                 }
                 if (piece.getTeamColor() == teamColor ||
-                    piece.getPieceType() == ChessPiece.PieceType.KNIGHT) break;
+                        piece.getPieceType() == ChessPiece.PieceType.KNIGHT) {
+                    break;
+                }
                 // queen can attack from any direction
                 if (piece.getPieceType() == ChessPiece.PieceType.QUEEN) {
                     threats.add(pos);
@@ -225,12 +235,16 @@ public class ChessGame {
     public boolean isInCheckmate(TeamColor teamColor) {
         var kingPos = board.getKing(teamColor);
         var threats = getThreats(kingPos);
-        if (threats.size() == 0) return false;
+        if (threats.size() == 0) {
+            return false;
+        }
         int resolvedThreats = 0;
         for (var threat : threats) {
             var savingThreats = getThreats(threat);
             for (var savingThreat : savingThreats) {
-                if (validMoves(savingThreat).size() > 0) resolvedThreats++;
+                if (validMoves(savingThreat).size() > 0) {
+                    resolvedThreats++;
+                }
             }
         }
         return resolvedThreats < threats.size();
@@ -249,10 +263,14 @@ public class ChessGame {
             for (int col = 0; col < ChessBoard.BOARD_SIZE; col++) {
                 var pos = new ChessPosition(row, col);
                 var piece = board.getPiece(pos);
-                if (piece == null) continue;
+                if (piece == null) {
+                    continue;
+                }
                 var color = piece.getTeamColor();
                 if (color == teamColor &&
-                    validMoves(pos).size() > 0) return false;
+                        validMoves(pos).size() > 0) {
+                    return false;
+                }
             }
         }
         return !isInCheck(teamColor);
