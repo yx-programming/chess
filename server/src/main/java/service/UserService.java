@@ -27,4 +27,8 @@ public class UserService {
     }
 
     protected UserDAO getUserData() { return userData; }
+
+    public void clear() {
+        userData.clear();
+    }
 }

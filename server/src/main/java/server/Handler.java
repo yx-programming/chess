@@ -97,7 +97,7 @@ public class Handler {
     }
 
     public void listGamesEndpoint(Context context) {
-
+        
     }
 
     public void createGameEndpoint(Context context) {
@@ -109,6 +109,10 @@ public class Handler {
     }
 
     public void clearDBEndpoint(Context context) {
-
+        context.contentType("application/json");
+        userService.clear();
+        authService.clear();
+        context.status(200);
+        context.result("{}");
     }
 }

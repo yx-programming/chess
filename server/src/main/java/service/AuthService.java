@@ -26,4 +26,8 @@ public class AuthService {
     public void removeAuth(AuthData authData) {
         auth.removeAuth(authData);
     }
+
+    public void clear() {
+        auth.clear();
+    }
 }
