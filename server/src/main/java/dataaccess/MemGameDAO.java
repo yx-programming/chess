@@ -11,7 +11,7 @@ public class MemGameDAO implements GameDAO {
 
     public MemGameDAO() {
         games = new HashMap<Integer, GameInfo>();
-        currentID = 0;
+        currentID = 1;
     }
 
     public List<GameInfo> getGames() {

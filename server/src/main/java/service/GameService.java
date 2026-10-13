@@ -24,4 +24,8 @@ public class GameService {
             throws Exception {
         game.joinGame(id, color, name);
     }
+
+    public void clear() {
+        game.clear();
+    }
 }

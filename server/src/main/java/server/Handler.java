@@ -13,10 +13,12 @@ import service.*;
 public class Handler {
     private UserService userService;
     private AuthService authService;
+    private GameService gameService;
     
     public Handler() {
         userService = new UserService();
         authService = new AuthService();
+        gameService = new GameService();
     }
 
     public void newUserEndpoint(Context context) {
@@ -100,8 +102,34 @@ public class Handler {
         
     }
 
-    public void createGameEndpoint(Context context) {
+    private record CreateGameRequest(String gameName) {}
 
+    public void createGameEndpoint(Context context) {
+        context.contentType("application/json");
+        String authToken = context.header("authorization");
+        try {
+            authService.getAuthFromToken(authToken);
+            CreateGameRequest game = new Gson().fromJson(context.body(),
+                CreateGameRequest.class);
+            if (game.gameName() == null) {
+                throw new Exception("bad request");
+            }
+            int id = gameService.newGame(game.gameName());
+            context.status(200);
+            context.result("{ \"gameID\": " + id + " }");
+        } catch (Exception e) {
+            String errString = e.getMessage();
+            if (errString.equals("unauthorized")) {
+                context.status(401);
+            } else if (errString.equals("bad request")) {
+                context.status(400);
+            } else {
+                context.status(500);
+            }
+            String jsonNames = new Gson().toJson(Map.of("message",
+                "Error: " + e.getMessage()));
+            context.result(jsonNames);
+        }
     }
 
     public void joinGameEndpoint(Context context) {
@@ -112,6 +140,7 @@ public class Handler {
         context.contentType("application/json");
         userService.clear();
         authService.clear();
+        gameService.clear();
         context.status(200);
         context.result("{}");
     }

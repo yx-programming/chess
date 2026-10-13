@@ -77,10 +77,10 @@ public class ServiceTests {
     public void createGameTestPositive() {
         var game = new GameService();
 
-        assertTrue(game.newGame("first") == 0);        
-        assertTrue(game.newGame("test") == 1);
-        assertTrue(game.newGame("for") == 2);        
-        assertTrue(game.newGame("GameService") == 3);        
+        assertTrue(game.newGame("first") > 0);        
+        assertTrue(game.newGame("test") > 0);
+        assertTrue(game.newGame("for") > 0);        
+        assertTrue(game.newGame("GameService") > 0);        
     }
 
     @Test

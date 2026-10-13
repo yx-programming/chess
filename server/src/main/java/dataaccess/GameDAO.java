@@ -10,4 +10,5 @@ public interface GameDAO {
     public int newGame(String name);
     public void joinGame(int id, ChessGame.TeamColor color,
         String username) throws Exception;
+    public void clear();
 }
