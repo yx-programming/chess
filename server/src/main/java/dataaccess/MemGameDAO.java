@@ -23,8 +23,25 @@ public class MemGameDAO implements GameDAO {
         return currentID++;
     }
 
-    public void joinGame(int id) {
-
+    public void joinGame(int id, ChessGame.TeamColor color, String username)
+            throws Exception {
+        GameInfo gameInfo = games.get(id);
+        if (gameInfo == null) {
+            throw new Exception("game does not exist");
+        }
+        if (color == ChessGame.TeamColor.WHITE) {
+            if (gameInfo.getWhiteUser() != null &&
+                    gameInfo.getWhiteUser() != username) {
+                throw new Exception("already taken");
+            }
+            gameInfo.setWhiteUser(username);
+        } else {
+            if (gameInfo.getBlackUser() != null &&
+                    gameInfo.getBlackUser() != username) {
+                throw new Exception("already taken");
+            }
+            gameInfo.setBlackUser(username);
+        } 
     }
 
     public void clear() {

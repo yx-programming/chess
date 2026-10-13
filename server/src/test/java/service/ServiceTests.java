@@ -3,6 +3,7 @@ package service;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
+import chess.*;
 import dataaccess.*;
 import model.*;
 
@@ -70,5 +71,51 @@ public class ServiceTests {
         var auth = new AuthService();
         var token = auth.newAuth("uhhh");
         assertDoesNotThrow(() -> auth.removeAuth(token));
+    }
+
+    @Test
+    public void createGameTestPositive() {
+        var game = new GameService();
+
+        assertTrue(game.newGame("first") == 0);        
+        assertTrue(game.newGame("test") == 1);
+        assertTrue(game.newGame("for") == 2);        
+        assertTrue(game.newGame("GameService") == 3);        
+    }
+
+    @Test
+    public void getGamesTestPositive() {
+        var game = new GameService();
+
+        game.newGame("next");
+        game.newGame("test");
+        game.newGame("for");
+        game.newGame("GameService");
+
+        assertTrue(game.getGames().size() == 4);
+    }
+
+    @Test
+    public void joinGameTestPositive() {
+        var game = new GameService();
+
+        int id = game.newGame("testing");
+
+        assertDoesNotThrow(() -> game.joinGame(id, ChessGame.TeamColor.WHITE,
+            "whiteuser"));
+        assertDoesNotThrow(() -> game.joinGame(id, ChessGame.TeamColor.WHITE,
+            "whiteuser"));
+    }
+
+    @Test
+    public void joinGameTestNegative() {
+        var game = new GameService();
+
+        int id = game.newGame("testing");
+
+        assertDoesNotThrow(() -> game.joinGame(id, ChessGame.TeamColor.WHITE,
+            "whiteuser"));
+        assertThrows(Exception.class, () -> game.joinGame(id,
+            ChessGame.TeamColor.WHITE, "blackuser"));
     }
 }

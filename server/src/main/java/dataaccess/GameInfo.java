@@ -20,7 +20,11 @@ public class GameInfo {
 
     public String getWhiteUser() { return whiteUsername; }
 
+    public void setWhiteUser(String name) { whiteUsername = name; }
+
     public String getBlackUser() { return blackUsername; }
+
+    public void setBlackUser(String name) { blackUsername = name; }
 
     public String getName() { return gameName; }
 
