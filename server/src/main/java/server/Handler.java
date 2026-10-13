@@ -11,6 +11,8 @@ import dataaccess.*;
 import model.*;
 import service.*;
 
+import java.util.*;
+
 public class Handler {
     private UserService userService;
     private AuthService authService;
@@ -20,6 +22,21 @@ public class Handler {
         userService = new UserService();
         authService = new AuthService();
         gameService = new GameService();
+    }
+
+    private static final Map<String, Integer> ERROR_CODES =
+        Map.of("bad request", 400, "already taken", 403, "unauthorized", 401);
+
+    private void handleErrors(Context context, Exception e) {
+        Integer code = ERROR_CODES.get(e.getMessage());
+        if (code == null) {
+            context.status(500);
+        } else {
+            context.status(code);
+        }
+        String jsonError = new Gson().toJson(Map.of("message",
+            "Error: " + e.getMessage()));
+        context.result(jsonError);
     }
 
     public void newUserEndpoint(Context context) {
@@ -35,17 +52,7 @@ public class Handler {
                 authService.newAuth(body.username()));
             context.result(jsonResult);
         } catch (Exception e) {
-            String errString = e.getMessage();
-            if (errString.equals("already taken")) {
-                context.status(403);
-            } else if (errString.equals("bad request")) {
-                context.status(400);
-            } else {
-                context.status(500);
-            }
-            String jsonNames = new Gson().toJson(Map.of("message",
-                "Error: " + e.getMessage()));
-            context.result(jsonNames);
+            handleErrors(context, e);
         }
     }
 
@@ -62,17 +69,7 @@ public class Handler {
                 authService.newAuth(body.username()));
             context.result(jsonResult);
         } catch (Exception e) {
-            String errString = e.getMessage();
-            if (errString.equals("unauthorized")) {
-                context.status(401);
-            } else if (errString.equals("bad request")) {
-                context.status(400);
-            } else {
-                context.status(500);
-            }
-            String jsonNames = new Gson().toJson(Map.of("message",
-                "Error: " + e.getMessage()));
-            context.result(jsonNames);
+            handleErrors(context, e);
         }
     }
 
@@ -85,17 +82,7 @@ public class Handler {
             context.status(200);
             context.result("{}");
         } catch (Exception e) {
-            String errString = e.getMessage();
-            if (errString.equals("unauthorized")) {
-                context.status(401);
-            } else if (errString.equals("bad request")) {
-                context.status(400);
-            } else {
-                context.status(500);
-            }
-            String jsonNames = new Gson().toJson(Map.of("message",
-                "Error: " + e.getMessage()));
-            context.result(jsonNames);
+            handleErrors(context, e);
         }
     }
 
@@ -108,17 +95,7 @@ public class Handler {
             context.status(200);
             context.result("{ \"games\": " + new Gson().toJson(games) + " }");
         } catch (Exception e) {
-            String errString = e.getMessage();
-            if (errString.equals("unauthorized")) {
-                context.status(401);
-            } else if (errString.equals("bad request")) {
-                context.status(400);
-            } else {
-                context.status(500);
-            }
-            String jsonNames = new Gson().toJson(Map.of("message",
-                "Error: " + e.getMessage()));
-            context.result(jsonNames);
+            handleErrors(context, e);
         }
     }
 
@@ -138,17 +115,7 @@ public class Handler {
             context.status(200);
             context.result("{ \"gameID\": " + id + " }");
         } catch (Exception e) {
-            String errString = e.getMessage();
-            if (errString.equals("unauthorized")) {
-                context.status(401);
-            } else if (errString.equals("bad request")) {
-                context.status(400);
-            } else {
-                context.status(500);
-            }
-            String jsonNames = new Gson().toJson(Map.of("message",
-                "Error: " + e.getMessage()));
-            context.result(jsonNames);
+            handleErrors(context, e);
         }
     }
 
@@ -172,19 +139,7 @@ public class Handler {
             context.status(200);
             context.result("{}");
         } catch (Exception e) {
-            String errString = e.getMessage();
-            if (errString.equals("unauthorized")) {
-                context.status(401);
-            } else if (errString.equals("bad request")) {
-                context.status(400);
-            } else if (errString.equals("already taken")) {
-                context.status(403);
-            } else {
-                context.status(500);
-            }
-            String jsonNames = new Gson().toJson(Map.of("message",
-                "Error: " + e.getMessage()));
-            context.result(jsonNames);
+            handleErrors(context, e);
         }
     }
 
