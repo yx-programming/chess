@@ -99,7 +99,26 @@ public class Handler {
     }
 
     public void listGamesEndpoint(Context context) {
-        
+        context.contentType("application/json");
+        String authToken = context.header("authorization");
+        try {
+            authService.getAuthFromToken(authToken);
+            var games = gameService.getGames();
+            context.status(200);
+            context.result("{ \"games\": " + new Gson().toJson(games) + " }");
+        } catch (Exception e) {
+            String errString = e.getMessage();
+            if (errString.equals("unauthorized")) {
+                context.status(401);
+            } else if (errString.equals("bad request")) {
+                context.status(400);
+            } else {
+                context.status(500);
+            }
+            String jsonNames = new Gson().toJson(Map.of("message",
+                "Error: " + e.getMessage()));
+            context.result(jsonNames);
+        }
     }
 
     private record CreateGameRequest(String gameName) {}
@@ -133,7 +152,6 @@ public class Handler {
     }
 
     public void joinGameEndpoint(Context context) {
-
     }
 
     public void clearDBEndpoint(Context context) {
