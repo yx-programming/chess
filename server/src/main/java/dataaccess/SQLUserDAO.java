@@ -11,9 +11,9 @@ public class SQLUserDAO implements UserDAO {
         var statementString = """
             create table if not exists users (
                 id int not null auto_increment,
-                username varchar(255) not null,
+                username varchar(255) unique not null,
                 password varchar(255) not null,
-                email varchar(255) not null,
+                email varchar(255) unique not null,
                 primary key (id)
             )""";
         SQLCommand.execute(statementString,
@@ -50,15 +50,21 @@ public class SQLUserDAO implements UserDAO {
     public UserData getUser(String username) {
         try {
             var statementRaw = """
-                select (password, email) from users where username=?;""";
+                select password, email from users where username=?;""";
             return SQLCommand.execute(statementRaw,
                 statement -> queryUsersTableForUsername(statement, username));
         } catch (Exception e) {
+            System.out.println("ERROR: " + e.getMessage());
             return null;
         }
     }
 
     public void clear() {
-
+        try {
+            SQLCommand.execute("truncate table users;",
+                statement -> statement.executeUpdate());
+        } catch (Exception e) {
+            // should be unreachable?
+        }
     }
 };
