@@ -6,17 +6,6 @@ import java.sql.*;
 
 public class SQLUserDAO implements UserDAO {
 
-    private <R> R runCommand(String statement, SQLCommand<R> toRun)
-            throws DataAccessException {
-        try (var conn = DatabaseManager.getConnection()) {
-            try (var preparedStatement = conn.prepareStatement(statement)) {
-                return toRun.apply(preparedStatement);
-            }
-        } catch (Exception e) {
-            throw new DataAccessException(e.getMessage());
-        }
-    }
-
     public SQLUserDAO() throws DataAccessException {
         DatabaseManager.createDatabase();
         var statementString = """
@@ -27,14 +16,15 @@ public class SQLUserDAO implements UserDAO {
                 email varchar(255) not null,
                 primary key (id)
             )""";
-        runCommand(statementString, statement -> statement.executeUpdate());
+        SQLCommand.execute(statementString,
+            statement -> statement.executeUpdate());
     }
 
     public void insertUser(UserData user) throws DataAccessException {
         var statementRaw = """
             insert into users (username, password, email) values (?, ?, ?);
             """;
-        runCommand(statementRaw, statement -> {
+        SQLCommand.execute(statementRaw, statement -> {
             statement.setString(1, user.username());
             // TODO: bCrypt the password
             statement.setString(2, user.password());
@@ -61,7 +51,7 @@ public class SQLUserDAO implements UserDAO {
         try {
             var statementRaw = """
                 select (password, email) from users where username=?;""";
-            return runCommand(statementRaw,
+            return SQLCommand.execute(statementRaw,
                 statement -> queryUsersTableForUsername(statement, username));
         } catch (Exception e) {
             return null;
