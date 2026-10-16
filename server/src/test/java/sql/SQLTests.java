@@ -49,4 +49,23 @@ public class SQLTests {
         var otherUser = user.getUser("nada ver");
         assertTrue(otherUser == null);
     }
+
+    @Test
+    public void testUserClear() {
+        var oneUser = new UserData("jameis", "fake", "...");
+        var twoUser = new UserData("fred", "again", "!");
+        assertDoesNotThrow(() -> user.insertUser(oneUser));
+        assertDoesNotThrow(() ->
+            user.insertUser(new UserData("another", "", "i")));
+        assertDoesNotThrow(() -> user.insertUser(new UserData("fake", "", "")));
+        assertDoesNotThrow(() -> user.insertUser(twoUser));
+        user.clear();
+        assertTrue(user.getUser(oneUser.username()) == null);
+        assertTrue(user.getUser(twoUser.username()) == null);
+        assertDoesNotThrow(() -> user.insertUser(oneUser));
+        assertDoesNotThrow(() ->
+            user.insertUser(new UserData("another", "", "i")));
+        assertDoesNotThrow(() -> user.insertUser(new UserData("fake", "", "")));
+        assertDoesNotThrow(() -> user.insertUser(twoUser));
+    }
 }
