@@ -17,4 +17,16 @@ public class SQLTests {
             assertTrue(false, e.getMessage());
         }
     }
+
+    @Test
+    public void testUserInsertUserNegative() {
+        try {
+            var user = new SQLUserDAO();
+            user.insertUser(new UserData("fred", "fake pass", "email@me.net"));
+            assertThrows(DataAccessException.class, () -> user.insertUser(
+                new UserData("empty fields", null, null)));
+        } catch (Exception e) {
+            assertTrue(false, e.getMessage());
+        }
+    }
 }
