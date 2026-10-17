@@ -7,7 +7,7 @@ public class AuthService {
     private AuthDAO auth;
 
     public AuthService() throws DataAccessException {
-        auth = new MemAuthDAO();
+        auth = new SQLAuthDAO();
     }
 
     public AuthData newAuth(String username) throws DataAccessException {

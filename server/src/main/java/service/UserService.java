@@ -7,14 +7,14 @@ public class UserService {
     private UserDAO userData;
     
     public UserService() throws DataAccessException {
-        userData = new MemUserDAO();
+        userData = new SQLUserDAO();
     }
 
-    public void newUser(UserData user) throws Exception {
+    public void newUser(UserData user) throws DataAccessException {
         try {
             userData.insertUser(user);
         } catch (DataAccessException dae) {
-            throw new Exception("already taken");
+            throw new DataAccessException("already taken");
         }
     }
 
