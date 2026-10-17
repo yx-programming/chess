@@ -6,11 +6,11 @@ import model.*;
 public class AuthService {
     private AuthDAO auth;
 
-    public AuthService() {
+    public AuthService() throws DataAccessException {
         auth = new MemAuthDAO();
     }
 
-    public AuthData newAuth(String username) {
+    public AuthData newAuth(String username) throws DataAccessException {
         return auth.newAuth(username);
     }
 
@@ -23,11 +23,11 @@ public class AuthService {
         return auth;
     }
 
-    public void removeAuth(AuthData authData) {
+    public void removeAuth(AuthData authData) throws DataAccessException {
         auth.removeAuth(authData);
     }
 
-    public void clear() {
+    public void clear() throws DataAccessException {
         auth.clear();
     }
 }

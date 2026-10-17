@@ -47,24 +47,23 @@ public class SQLUserDAO implements UserDAO {
         }
     }
 
-    public UserData getUser(String username) {
+    public UserData getUser(String username) throws DataAccessException {
         try {
             var statementRaw = """
                 select password, email from users where username=?;""";
             return SQLCommand.execute(statementRaw,
                 statement -> queryUsersTableForUsername(statement, username));
         } catch (Exception e) {
-            System.out.println("ERROR: " + e.getMessage());
-            return null;
+            throw new DataAccessException(e.getMessage());
         }
     }
 
-    public void clear() {
+    public void clear() throws DataAccessException {
         try {
             SQLCommand.execute("truncate table users;",
                 statement -> statement.executeUpdate());
         } catch (Exception e) {
-            // should be unreachable?
+            throw new DataAccessException(e.getMessage());
         }
     }
 };

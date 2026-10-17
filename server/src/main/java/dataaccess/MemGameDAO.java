@@ -9,42 +9,42 @@ public class MemGameDAO implements GameDAO {
     private Map<Integer, GameInfo> games;
     private int currentID;
 
-    public MemGameDAO() {
+    public MemGameDAO() throws DataAccessException {
         games = new HashMap<Integer, GameInfo>();
         currentID = 1;
     }
 
-    public List<GameInfo> getGames() {
+    public List<GameInfo> getGames() throws DataAccessException {
         return new ArrayList<GameInfo>(games.values());
     }
 
-    public int newGame(String name) {
+    public int newGame(String name) throws DataAccessException {
         games.put(currentID, new GameInfo(currentID, null, null, name));
         return currentID++;
     }
 
     public void joinGame(int id, ChessGame.TeamColor color, String username)
-            throws Exception {
+            throws DataAccessException {
         GameInfo gameInfo = games.get(id);
         if (gameInfo == null) {
-            throw new Exception("game does not exist");
+            throw new DataAccessException("game does not exist");
         }
         if (color == ChessGame.TeamColor.WHITE) {
             if (gameInfo.getWhiteUser() != null &&
                     gameInfo.getWhiteUser() != username) {
-                throw new Exception("already taken");
+                throw new DataAccessException("already taken");
             }
             gameInfo.setWhiteUser(username);
         } else {
             if (gameInfo.getBlackUser() != null &&
                     gameInfo.getBlackUser() != username) {
-                throw new Exception("already taken");
+                throw new DataAccessException("already taken");
             }
             gameInfo.setBlackUser(username);
         } 
     }
 
-    public void clear() {
+    public void clear() throws DataAccessException {
         games.clear();
     }
 };

@@ -6,7 +6,7 @@ import model.*;
 public class UserService {
     private UserDAO userData;
     
-    public UserService() {
+    public UserService() throws DataAccessException {
         userData = new MemUserDAO();
     }
 
@@ -28,7 +28,7 @@ public class UserService {
 
     protected UserDAO getUserData() { return userData; }
 
-    public void clear() {
+    public void clear() throws DataAccessException {
         userData.clear();
     }
 }

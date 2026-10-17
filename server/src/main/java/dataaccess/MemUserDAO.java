@@ -18,11 +18,11 @@ public class MemUserDAO implements UserDAO {
         users.put(user.username(), user);
     }
 
-    public UserData getUser(String username) {
+    public UserData getUser(String username) throws DataAccessException {
         return users.get(username);
     }
 
-    public void clear() {
+    public void clear() throws DataAccessException {
         users.clear();
     }
 }

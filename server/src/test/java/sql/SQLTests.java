@@ -14,7 +14,7 @@ public class SQLTests {
     }
     
     @BeforeEach
-    public void each() {
+    public void each() throws DataAccessException {
         user.clear();
     }
 
@@ -35,7 +35,7 @@ public class SQLTests {
     }
 
     @Test
-    public void testUserGetUserPositive() {
+    public void testUserGetUserPositive() throws DataAccessException {
         var testUser = new UserData("fred", "another", "more emails");
         assertDoesNotThrow(() -> user.insertUser(testUser));
         var otherUser = user.getUser(testUser.username());
@@ -43,7 +43,7 @@ public class SQLTests {
     }
 
     @Test
-    public void testUserGetUserNegative() {
+    public void testUserGetUserNegative() throws DataAccessException {
         var testUser = new UserData("fred", "another", "more emails");
         assertDoesNotThrow(() -> user.insertUser(testUser));
         var otherUser = user.getUser("nada ver");
@@ -51,7 +51,7 @@ public class SQLTests {
     }
 
     @Test
-    public void testUserClear() {
+    public void testUserClear() throws DataAccessException {
         var oneUser = new UserData("jameis", "fake", "...");
         var twoUser = new UserData("fred", "again", "!");
         assertDoesNotThrow(() -> user.insertUser(oneUser));

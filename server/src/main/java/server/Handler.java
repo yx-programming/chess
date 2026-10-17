@@ -19,9 +19,14 @@ public class Handler {
     private GameService gameService;
     
     public Handler() {
-        userService = new UserService();
-        authService = new AuthService();
-        gameService = new GameService();
+        try {
+            userService = new UserService();
+            authService = new AuthService();
+            gameService = new GameService();
+        } catch (DataAccessException dae) {
+            System.out.println(dae.getMessage());
+            System.exit(1);
+        }
     }
 
     private static final Map<String, Integer> ERROR_CODES =
@@ -145,10 +150,14 @@ public class Handler {
 
     public void clearDBEndpoint(Context context) {
         context.contentType("application/json");
-        userService.clear();
-        authService.clear();
-        gameService.clear();
-        context.status(200);
-        context.result("{}");
+        try {
+            userService.clear();
+            authService.clear();
+            gameService.clear();
+            context.status(200);
+            context.result("{}");
+        } catch (Exception e) {
+            handleErrors(context, e);
+        }
     }
 }
