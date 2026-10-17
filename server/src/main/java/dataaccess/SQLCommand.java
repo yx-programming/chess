@@ -9,7 +9,7 @@ public interface SQLCommand<R> {
     public static <R> R execute(String statement, SQLCommand<R> toRun)
             throws DataAccessException {
         try (var conn = DatabaseManager.getConnection()) {
-            try (var preparedStatement = conn.prepareStatement(statement)) {
+            try (var preparedStatement = conn.prepareStatement(statement, Statement.RETURN_GENERATED_KEYS)) {
                 return toRun.apply(preparedStatement);
             }
         } catch (Exception e) {

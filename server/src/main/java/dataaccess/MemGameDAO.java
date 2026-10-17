@@ -19,7 +19,8 @@ public class MemGameDAO implements GameDAO {
     }
 
     public int newGame(String name) throws DataAccessException {
-        games.put(currentID, new GameInfo(currentID, null, null, name));
+        games.put(currentID, new GameInfo(currentID, null, null, name,
+            new ChessGame()));
         return currentID++;
     }
 
@@ -31,17 +32,17 @@ public class MemGameDAO implements GameDAO {
         }
         if (color == ChessGame.TeamColor.WHITE) {
             if (gameInfo.getWhiteUser() != null &&
-                    gameInfo.getWhiteUser() != username) {
+                    !gameInfo.getWhiteUser().equals(username)) {
                 throw new DataAccessException("already taken");
             }
             gameInfo.setWhiteUser(username);
         } else {
             if (gameInfo.getBlackUser() != null &&
-                    gameInfo.getBlackUser() != username) {
+                    !gameInfo.getBlackUser().equals(username)) {
                 throw new DataAccessException("already taken");
             }
             gameInfo.setBlackUser(username);
-        } 
+        }
     }
 
     public void clear() throws DataAccessException {

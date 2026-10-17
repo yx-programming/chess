@@ -9,7 +9,7 @@ public class GameService {
     private GameDAO game;
 
     public GameService() throws DataAccessException {
-        game = new MemGameDAO();
+        game = new SQLGameDAO();
     }
 
     public List<GameInfo> getGames() throws DataAccessException {

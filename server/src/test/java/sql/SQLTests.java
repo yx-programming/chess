@@ -8,17 +8,21 @@ import dataaccess.*;
 import model.*;
 
 public class SQLTests {
-    private SQLUserDAO user;
-    private SQLAuthDAO auth;
+    private UserDAO user;
+    private AuthDAO auth;
+    private GameDAO game;
+
     public SQLTests() throws DataAccessException {
-        user = new SQLUserDAO();
-        auth = new SQLAuthDAO();
+        this.user = new SQLUserDAO();
+        this.auth = new SQLAuthDAO();
+        this.game = new SQLGameDAO();
     }
     
     @BeforeEach
     public void each() throws DataAccessException {
         user.clear();
         auth.clear();
+        game.clear();
     }
 
     @Test
@@ -119,5 +123,29 @@ public class SQLTests {
                 return auth.getAuth(authInfo.authToken()) == null;
             } catch (Exception e) { return false; }
         });
+    }
+
+    @Test
+    public void testGameNewGamePositive() {
+        assertDoesNotThrow(() -> game.newGame("test"));        
+    }
+
+    @Test
+    public void testGameListGamesPositive() throws DataAccessException {
+        int id1 = game.newGame("test1");
+        int id2 = game.newGame("test2");
+        int id3 = game.newGame("test3");
+
+        var games = game.getGames();
+        assertTrue(games.size() == 3);
+    }
+
+    @Test public void testGameJoinGamePosition() throws DataAccessException {
+        int id1 = game.newGame("test1");
+
+        assertDoesNotThrow(() -> game.joinGame(id1, ChessGame.TeamColor.BLACK,
+            "testuser1"));        
+        assertDoesNotThrow(() -> game.joinGame(id1, ChessGame.TeamColor.WHITE,
+            "testuser2"));        
     }
 }

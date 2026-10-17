@@ -15,6 +15,9 @@ public class MemUserDAO implements UserDAO {
         if (getUser(user.username()) != null) {
             throw new DataAccessException("user already in database");
         }
+        if (user.password() == null || user.email() == null) {
+            throw new DataAccessException("bad request");
+        }
         users.put(user.username(), user);
     }
 

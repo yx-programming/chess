@@ -8,12 +8,13 @@ public class GameInfo {
     private String whiteUsername, blackUsername, gameName;
     private ChessGame game;
 
-    public GameInfo(int id, String whiteUser, String blackUser, String name) {
+    public GameInfo(int id, String whiteUser, String blackUser, String name,
+            ChessGame game) {
         gameID = id;
         whiteUsername = whiteUser;
         blackUsername = blackUser;
         gameName = name;
-        game = new ChessGame();
+        game = game;
     }
 
     public int getID() { return gameID; }
