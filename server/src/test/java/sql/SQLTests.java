@@ -104,4 +104,26 @@ public class SQLTests {
             } catch (Exception e) { return false; }
         });
     }
+
+    @Test
+    public void testAuthRemoveAuthPositive() throws DataAccessException {
+        AuthData authInfo = auth.newAuth("fakeuser");
+        assertDoesNotThrow(() -> auth.removeAuth(authInfo));
+        assertTrue(() -> {
+            try {
+                return auth.getAuth(authInfo.authToken()) == null;
+            } catch (Exception e) { return false; }
+        });
+    }
+
+    @Test
+    public void testAuthClearPositive() throws DataAccessException {
+        AuthData authInfo = auth.newAuth("fakeuser");
+        auth.clear();
+        assertTrue(() -> {
+            try {
+                return auth.getAuth(authInfo.authToken()) == null;
+            } catch (Exception e) { return false; }
+        });
+    }
 }

@@ -49,7 +49,11 @@ public class SQLAuthDAO implements AuthDAO {
     }
     
     public void removeAuth(AuthData auth) throws DataAccessException {
-
+        var statementString = "delete from authtable where token = ?;";
+        SQLCommand.execute(statementString, statement -> {
+            statement.setString(1, auth.authToken());
+            return statement.executeUpdate();
+        });
     }
     
     public void clear() throws DataAccessException {
