@@ -140,12 +140,16 @@ public class SQLTests {
         assertTrue(games.size() == 3);
     }
 
-    @Test public void testGameJoinGamePosition() throws DataAccessException {
+    @Test public void testGameJoinGameNegative() throws DataAccessException {
         int id1 = game.newGame("test1");
 
-        assertDoesNotThrow(() -> game.joinGame(id1, ChessGame.TeamColor.BLACK,
-            "testuser1"));        
-        assertDoesNotThrow(() -> game.joinGame(id1, ChessGame.TeamColor.WHITE,
-            "testuser2"));        
+        assertThrows(DataAccessException.class,
+            () -> game.joinGame(10, ChessGame.TeamColor.WHITE, "testuser2"));        
+        game.joinGame(id1, ChessGame.TeamColor.WHITE, "testuser2");
+        game.joinGame(id1, ChessGame.TeamColor.BLACK, "testuser3");
+        assertThrows(DataAccessException.class,
+            () -> game.joinGame(id1, ChessGame.TeamColor.BLACK, "testuser2"));
+        assertThrows(DataAccessException.class,
+            () -> game.joinGame(id1, ChessGame.TeamColor.WHITE, "testuser3"));
     }
 }
