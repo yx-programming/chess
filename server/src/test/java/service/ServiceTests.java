@@ -1,6 +1,7 @@
 package service;
 
 import org.junit.jupiter.api.*;
+import org.junit.jupiter.params.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 import chess.*;
