@@ -321,7 +321,7 @@ public class ChessGame {
                     (pieceChar == 'p') ? ChessPiece.PieceType.PAWN : null;
                 var piece = (pieceType != null) ?
                     new ChessPiece(team, pieceType) : null;
-                game.getBoard().addPiece(new ChessPosition(i, j), piece);
+                game.getBoard().addPiece(new ChessPosition(i + 1, j + 1), piece);
             }
         }
         return game;
