@@ -78,9 +78,7 @@ public class ChessBoard {
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        sb.append("BORKED: ------BOARD-------\n");
         for (ChessPiece[] row : this.board) {
-            sb.append("BORKED: ");
             for (ChessPiece piece : row) {
                 if (piece == null) {
                     sb.append(' ');
@@ -100,7 +98,6 @@ public class ChessBoard {
             }
             sb.append('\n');
         }
-        sb.append("BORKED: ------ENDBOARD-------");
         return sb.toString();
     }
 

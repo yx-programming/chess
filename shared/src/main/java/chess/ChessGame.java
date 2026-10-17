@@ -293,4 +293,37 @@ public class ChessGame {
     public ChessBoard getBoard() {
         return board;
     }
+
+    public String serialize() {
+        var sb = new StringBuilder();
+        sb.append(turn == TeamColor.WHITE ? 'W' : 'B');
+        sb.append(board.toString());
+        return sb.toString();
+    }
+
+    public static ChessGame fromSerialized(String serial) {
+        ChessGame game = new ChessGame();
+        if (serial.charAt(0) == 'B') {
+            game.setTeamTurn(TeamColor.BLACK);
+        }
+        for (int i = 0; i < ChessBoard.BOARD_SIZE; i++) {
+            for (int j = 0; j < ChessBoard.BOARD_SIZE; j++) {
+                char pieceChar = serial.charAt(i * ChessBoard.BOARD_SIZE +
+                    j + 1);
+                TeamColor team = Character.isUpperCase(pieceChar) ? 
+                    TeamColor.WHITE : TeamColor.BLACK;
+                pieceChar = Character.toLowerCase(pieceChar);
+                var pieceType = (pieceChar == 'k') ? ChessPiece.PieceType.KING :
+                    (pieceChar == 'q') ? ChessPiece.PieceType.QUEEN :
+                    (pieceChar == 'r') ? ChessPiece.PieceType.ROOK :
+                    (pieceChar == 'b') ? ChessPiece.PieceType.BISHOP :
+                    (pieceChar == 'n') ? ChessPiece.PieceType.KNIGHT :
+                    (pieceChar == 'p') ? ChessPiece.PieceType.PAWN : null;
+                var piece = (pieceType != null) ?
+                    new ChessPiece(team, pieceType) : null;
+                game.getBoard().addPiece(new ChessPosition(i, j), piece);
+            }
+        }
+        return game;
+    }
 }
