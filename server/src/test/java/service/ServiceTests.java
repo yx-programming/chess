@@ -30,7 +30,7 @@ public class ServiceTests {
         var data = new UserData("test", "password", "email@email.net");
         user.newUser(data);
         assertDoesNotThrow(() ->
-            assertTrue(data.equals(user.getUserData().getUser("test"))));
+            assertTrue(user.getUserData().getUser("test") != null));
     }
 
     @Test

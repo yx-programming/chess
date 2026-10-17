@@ -3,6 +3,8 @@ package service;
 import dataaccess.*;
 import model.*;
 
+import org.mindrot.jbcrypt.BCrypt;
+
 public class UserService {
     private UserDAO userData;
     
@@ -14,14 +16,18 @@ public class UserService {
         try {
             userData.insertUser(user);
         } catch (DataAccessException dae) {
-            throw new DataAccessException("already taken");
+            if (dae.getMessage().contains("Duplicate entry")) {
+                throw new DataAccessException("already taken");
+            } else {
+                throw dae;
+            }
         }
     }
 
     public void validateUser(UserData user) throws Exception {
         UserData loginInfo = userData.getUser(user.username());
         if (loginInfo == null ||
-                !loginInfo.password().equals(user.password())) {
+                !BCrypt.checkpw(user.password(), loginInfo.password())) {
             throw new Exception("unauthorized");
         }
     }

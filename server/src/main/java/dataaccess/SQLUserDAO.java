@@ -2,6 +2,8 @@ package dataaccess;
 
 import model.*;
 
+import org.mindrot.jbcrypt.BCrypt;
+
 import java.sql.*;
 
 public class SQLUserDAO implements UserDAO {
@@ -24,10 +26,10 @@ public class SQLUserDAO implements UserDAO {
         var statementRaw = """
             insert into users (username, password, email) values (?, ?, ?);
             """;
+        var hashedPassword = BCrypt.hashpw(user.password(), BCrypt.gensalt());
         SQLCommand.execute(statementRaw, statement -> {
             statement.setString(1, user.username());
-            // TODO: bCrypt the password
-            statement.setString(2, user.password());
+            statement.setString(2, hashedPassword);
             statement.setString(3, user.email());
             return statement.executeUpdate();
         });

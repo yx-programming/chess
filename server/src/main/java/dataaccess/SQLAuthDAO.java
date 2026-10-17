@@ -10,7 +10,7 @@ public class SQLAuthDAO implements AuthDAO {
         var statementString = """
             create table if not exists authtable (
                 id int not null auto_increment,
-                username varchar(255) unique not null,
+                username varchar(255) not null,
                 token char(36) unique not null,
                 primary key (id),
                 index (token)
