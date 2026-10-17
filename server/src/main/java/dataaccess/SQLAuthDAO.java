@@ -8,12 +8,12 @@ public class SQLAuthDAO implements AuthDAO {
     public SQLAuthDAO() throws DataAccessException {
         DatabaseManager.createDatabase();
         var statementString = """
-            create table if not exists auth (
+            create table if not exists authtable (
                 id int not null auto_increment,
                 username varchar(255) unique not null,
-                auth char(36) unique not null,
+                token char(36) unique not null,
                 primary key (id),
-                index (auth)
+                index (token)
         )""";
         SQLCommand.execute(statementString,
             statement -> statement.executeUpdate());
@@ -23,7 +23,7 @@ public class SQLAuthDAO implements AuthDAO {
         String token = UUID.randomUUID().toString();   
         var authData = new AuthData(token, username);
         var statementString = """
-            insert into auth (name, auth) values (?, ?);""";
+            insert into authtable (username, token) values (?, ?);""";
         SQLCommand.execute(statementString, statement -> {
             statement.setString(1, username);
             statement.setString(2, token);

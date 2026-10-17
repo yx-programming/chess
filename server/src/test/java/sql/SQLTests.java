@@ -9,13 +9,16 @@ import model.*;
 
 public class SQLTests {
     private SQLUserDAO user;
+    private SQLAuthDAO auth;
     public SQLTests() throws DataAccessException {
         user = new SQLUserDAO();
+        auth = new SQLAuthDAO();
     }
     
     @BeforeEach
     public void each() throws DataAccessException {
         user.clear();
+        auth.clear();
     }
 
     @Test
@@ -67,5 +70,10 @@ public class SQLTests {
             user.insertUser(new UserData("another", "", "i")));
         assertDoesNotThrow(() -> user.insertUser(new UserData("fake", "", "")));
         assertDoesNotThrow(() -> user.insertUser(twoUser));
+    }
+
+    @Test
+    public void testAuthNewAuthPositive() throws DataAccessException {
+        assertDoesNotThrow(() -> auth.newAuth("fakeuser"));
     }
 }
