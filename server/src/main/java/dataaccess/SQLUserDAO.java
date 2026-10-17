@@ -49,9 +49,9 @@ public class SQLUserDAO implements UserDAO {
 
     public UserData getUser(String username) throws DataAccessException {
         try {
-            var statementRaw = """
+            var statementString = """
                 select password, email from users where username=?;""";
-            return SQLCommand.execute(statementRaw,
+            return SQLCommand.execute(statementString,
                 statement -> queryUsersTableForUsername(statement, username));
         } catch (Exception e) {
             throw new DataAccessException(e.getMessage());

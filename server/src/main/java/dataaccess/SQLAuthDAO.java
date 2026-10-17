@@ -33,7 +33,19 @@ public class SQLAuthDAO implements AuthDAO {
     }
     
     public AuthData getAuth(String authToken) throws DataAccessException {
-        return null;
+        var statementString = """
+            select username, token from authtable where token=?;""";
+        return SQLCommand.execute(statementString, statement -> {
+            statement.setString(1, authToken);
+            try (var rs = statement.executeQuery()) {
+                if (rs.next()) {
+                    var username = rs.getString(1);
+                    return new AuthData(username, authToken);
+                } else {
+                    return null;
+                }
+            }
+        });
     }
     
     public void removeAuth(AuthData auth) throws DataAccessException {
@@ -41,6 +53,8 @@ public class SQLAuthDAO implements AuthDAO {
     }
     
     public void clear() throws DataAccessException {
-
+        var statementString = "truncate table authtable;";
+        SQLCommand.execute(statementString,
+            statement -> statement.executeUpdate());
     }
 }

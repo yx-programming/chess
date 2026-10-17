@@ -76,4 +76,32 @@ public class SQLTests {
     public void testAuthNewAuthPositive() throws DataAccessException {
         assertDoesNotThrow(() -> auth.newAuth("fakeuser"));
     }
+
+    @Test
+    public void testAuthNewAuthNegative() throws DataAccessException {
+        assertDoesNotThrow(() -> auth.newAuth("fakeuser"));
+        assertThrows(DataAccessException.class, () -> auth.newAuth("fakeuser"));
+    }
+
+    @Test
+    public void testAuthGetAuthPositive() throws DataAccessException {
+        assertDoesNotThrow(() -> auth.newAuth("fakeuser"));
+        assertDoesNotThrow(() -> auth.newAuth("anotherfake"));
+        assertFalse(() -> {
+            try {
+                return auth.getAuth("fakeuser")
+                    .equals(auth.getAuth("anotherfake"));
+            } catch (Exception e) { return false; }
+        });
+    }
+
+    @Test
+    public void testAuthGetAuthNegative() throws DataAccessException {
+        assertDoesNotThrow(() -> auth.newAuth("fakeuser"));
+        assertTrue(() -> {
+            try {
+                return auth.getAuth("another fake user") == null;
+            } catch (Exception e) { return false; }
+        });
+    }
 }
