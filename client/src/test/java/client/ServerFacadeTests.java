@@ -35,7 +35,7 @@ public class ServerFacadeTests {
     @Test
     public void registerTestPositive() throws Exception {
         Assertions.assertTrue(
-            facade.register("fred", "pass", "email").length() > 10);
+            facade.register("fred", "pass", "email").length() == 36);
     }
 
     @Test
@@ -49,13 +49,19 @@ public class ServerFacadeTests {
     public void loginTestPositive() throws Exception {
         facade.register("fred", "pass", "email");
         Assertions.assertTrue(
-            facade.login("fred", "pass").length() > 10);
+            facade.login("fred", "pass").length() == 36);
     }
 
     @Test
     public void loginTestNegative() throws Exception {
         facade.register("fred", "pass", "email");
         Assertions.assertThrows(Exception.class,
-            () -> facade.login("fred", "wrong pass"));
+            () -> facade.login("fred", "passfalse"));
+    }
+
+    @Test
+    public void logoutTestPositive() throws Exception {
+        String auth = facade.register("fred", "pass", "email");
+        Assertions.assertDoesNotThrow(() -> facade.logout(auth));
     }
 }

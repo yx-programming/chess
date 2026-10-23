@@ -8,7 +8,7 @@ public class ServerFacade {
     private record ClientError(String message) {}
     private String baseUrl;
     private int port;
-    
+
     public ServerFacade(String url, int port) {
         baseUrl = url;
         this.port = port;
@@ -26,6 +26,10 @@ public class ServerFacade {
         return extractAuthToken(httpRequest("session", "POST",
             "{\"username\":\"" + username + "\",\"password\":\"" + password +
             "\"}", null));
+    }
+
+    public void logout(String authToken) throws Exception {
+        httpRequest("session", "DELETE", null, authToken);
     }
 
     private record AuthResult(String username, String authToken) {}
