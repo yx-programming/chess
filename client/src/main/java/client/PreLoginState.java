@@ -19,10 +19,18 @@ public class PreLoginState extends ClientState {
     }
 
     public ClientState help(String[] args, ServerFacade facade) {
-        return this;       
+        System.out.println(EscapeSequences.SET_TEXT_COLOR_BLUE);
+        System.out.println("help - list currently valid commands");
+        System.out.println("quit - exit the application");
+        System.out.println("login <USERNAME> <PASSWORD> - login to the server");
+        System.out.print("register <USERNAME> <PASSWORD> <EMAIL> - ");
+        System.out.println("register a new user on the server");
+        System.out.println(EscapeSequences.RESET_TEXT_COLOR);
+        return this;
     }
 
     public ClientState quit(String[] args, ServerFacade facade) {
+        System.out.println("goodbye");
         return null;
     }
 
@@ -34,11 +42,18 @@ public class PreLoginState extends ClientState {
         var username = args[0];
         var password = args[1];
         var authToken = facade.login(username, password);
-        return new PostLoginState(authToken);
+        return new PostLoginState(username, authToken);
     }
 
     public ClientState register(String[] args, ServerFacade facade)
             throws Exception {
-        return this;
+        if (args.length != 3) {
+            throw new Exception("expected username, password, and email");
+        }
+        var username = args[0];
+        var password = args[1];
+        var email = args[2];
+        var authToken = facade.register(username, password, email);
+        return new PostLoginState(username, authToken);
     }
 }
