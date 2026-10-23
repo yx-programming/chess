@@ -17,9 +17,20 @@ public class ServerFacade {
 
     public String register(String username, String password, String email)
             throws Exception {
-        return httpRequest("user", "POST",
+        return extractAuthToken(httpRequest("user", "POST",
             "{\"username\":\"" + username + "\",\"password\":\"" + password +
-            "\",\"email\":\"" + email + "\"}", null);
+            "\",\"email\":\"" + email + "\"}", null));
+    }
+
+    public String login(String username, String password) throws Exception {
+        return extractAuthToken(httpRequest("session", "POST",
+            "{\"username\":\"" + username + "\",\"password\":\"" + password +
+            "\"}", null));
+    }
+
+    private record AuthResult(String username, String authToken) {}
+    private String extractAuthToken(String json) {
+        return new Gson().fromJson(json, AuthResult.class).authToken();
     }
 
     protected String httpRequest(String endpoint, String method, String body,
