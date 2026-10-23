@@ -2,6 +2,7 @@ package client;
 
 import java.net.*;
 import java.io.*;
+import java.util.*;
 import com.google.gson.*;
 
 public class ServerFacade {
@@ -13,7 +14,6 @@ public class ServerFacade {
         baseUrl = url;
         this.port = port;
     }
-
 
     public String register(String username, String password, String email)
             throws Exception {
@@ -30,6 +30,20 @@ public class ServerFacade {
 
     public void logout(String authToken) throws Exception {
         httpRequest("session", "DELETE", null, authToken);
+    }
+
+    private record GameId(int gameID) {}
+    public int createGame(String authToken, String gameName) throws Exception {
+        String result = httpRequest("game", "POST", 
+            "{\"gameName\":\"" + gameName + "\"}", authToken);
+        return new Gson().fromJson(result, GameId.class).gameID(); 
+    }
+
+    public record GameInfo(int gameID, String whiteUsername,
+        String blackUsername, String gameName) {}
+    private record Games(List<GameInfo> games) {}
+    public void listGames(String authToken) throws Exception {
+        
     }
 
     private record AuthResult(String username, String authToken) {}
