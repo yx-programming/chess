@@ -8,11 +8,11 @@ public class ServerFacade {
     private int port;
     
     public ServerFacade(String url, int port) throws MalformedURLException {
-        this.url = new URL(url);
+        this.url = new URL(url + ":" + port);
         this.port = port;
     }
 
-    private void httpRequest(String method, String body, String authHeader)
+    private String httpRequest(String method, String body, String authHeader)
             throws IOException {
         var conn = (HttpURLConnection)url.openConnection();
         conn.setRequestMethod(method);
@@ -24,8 +24,20 @@ public class ServerFacade {
             conn.setUseCaches(false);
             conn.setDoOutput(true);
 
-            var out = new DataOutputStream(conn.getOutputStream());
-            out.writeBytes(body);
+            try (var out = new DataOutputStream(conn.getOutputStream())) {
+                out.writeBytes(body);
+            }
+
+        }
+        try (var in = conn.getInputStream()) {
+            var rd = new BufferedReader(new InputStreamReader(in));
+            var response = new StringBuilder();
+            String line;
+            while ((line = rd.readLine()) != null) {
+                response.append(line);
+            }
+            rd.close();
+            return response.toString();
         }
     }
 };
