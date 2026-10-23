@@ -37,4 +37,10 @@ public class ServerFacadeTests {
         Assertions.assertTrue(
             facade.register("fred", "pass", "email").length() > 10);
     }
+
+    @Test public void registerTestNegative() throws Exception {
+        facade.register("fred", "pass", "email");
+        Assertions.assertThrows(Exception.class,
+            () -> facade.register("fred", "pass", "email"));
+    }
 }
