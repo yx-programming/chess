@@ -3,6 +3,8 @@ package client;
 import org.junit.jupiter.api.*;
 import server.Server;
 
+import chess.*;
+
 
 public class ServerFacadeTests {
 
@@ -97,5 +99,27 @@ public class ServerFacadeTests {
     public void listGamesTestNegative() throws Exception {
         Assertions.assertThrows(Exception.class,
             () -> facade.listGames("bad auth"));
+    }
+
+    @Test
+    public void joinGamePositive() throws Exception {
+        String auth = facade.register("fred", "pass", "email");
+        int id = facade.createGame(auth, "test");
+        Assertions.assertDoesNotThrow(
+            () -> facade.joinGame(auth, ChessGame.TeamColor.WHITE, id));
+    }
+
+    @Test
+    public void joinGameNegative() throws Exception {
+        String auth = facade.register("fred", "pass", "email");
+        int id = facade.createGame(auth, "test");
+        Assertions.assertThrows(Exception.class,
+            () -> facade.joinGame(auth, ChessGame.TeamColor.WHITE, id - 1));
+        Assertions.assertThrows(Exception.class,
+            () -> facade.joinGame("bad auth", ChessGame.TeamColor.WHITE, id));
+        String auth2 = facade.register("other fred", "pass", "email2");
+        facade.joinGame(auth, ChessGame.TeamColor.WHITE, id);
+        Assertions.assertThrows(Exception.class,
+            () -> facade.joinGame(auth2, ChessGame.TeamColor.WHITE, id));
     }
 }

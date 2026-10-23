@@ -1,5 +1,7 @@
 package client;
 
+import chess.*;
+
 import java.net.*;
 import java.io.*;
 import java.util.*;
@@ -45,6 +47,15 @@ public class ServerFacade {
     public List<GameInfo> listGames(String authToken) throws Exception {
         String result = httpRequest("game", "GET", null, authToken);
         return new Gson().fromJson(result, Games.class).games();
+    }
+
+    public void joinGame(String authToken, ChessGame.TeamColor color, int id)
+            throws Exception {
+        var colorStr = (color == ChessGame.TeamColor.WHITE) ? "WHITE" :
+            "BLACK";
+        httpRequest("game", "PUT",
+            "{\"playerColor\":\"" + colorStr + "\",\"gameID\":\"" + id + "\"}",
+                authToken);
     }
 
     private record AuthResult(String username, String authToken) {}
