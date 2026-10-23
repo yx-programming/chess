@@ -2,8 +2,10 @@ package client;
 
 import java.net.*;
 import java.io.*;
+import com.google.gson.*;
 
 public class ServerFacade {
+    private record ClientError(String message) {}
     private String baseUrl;
     private int port;
     
@@ -46,7 +48,12 @@ public class ServerFacade {
                 response.append(line);
             }
             rd.close();
-            return response.toString();
+            String result = response.toString();
+            if (result.contains("message")) {
+                var err = new Gson().fromJson(result, ClientError.class);
+                throw new Exception(err.message());
+            }
+            return result;
         }
     }
 };

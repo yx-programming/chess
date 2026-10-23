@@ -33,7 +33,7 @@ public class ServerFacadeTests {
     }
 
     @Test
-    public void registerTest() throws Exception {
+    public void registerTestPositive() throws Exception {
         Assertions.assertTrue(
             facade.register("fred", "pass", "email").length() > 10);
     }
