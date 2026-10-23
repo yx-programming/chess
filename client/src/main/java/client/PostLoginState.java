@@ -100,10 +100,21 @@ public class PostLoginState extends ClientState {
 
     private ClientState joinGame(String[] args, ServerFacade facade)
             throws Exception {
+        if (games == null) {
+            throw new Exception("no games have been listed to select from");
+        }
         if (args.length < 1 || args.length > 2) {
             throw new Exception("expected game id, with optional team color");
         } 
-        var id = Integer.parseInt(args[0]) - 1;
+        int id;
+        try {
+            id = Integer.parseInt(args[0]) - 1;
+        } catch (Exception e) {
+            throw new Exception("game id must be a number (look at the game list");
+        }
+        if (id < 0 || id > games.size() - 1) {
+            throw new Exception("id must be in the game list");
+        }
         var game = games.get(id);
         if (game == null) {
             throw new Exception("game with id " + id + " doesn't exist");
@@ -118,18 +129,18 @@ public class PostLoginState extends ClientState {
             }
         } else {
             if (game.whiteUsername() == null ||
-                    game.whiteUsername.equals(username)) {
+                    game.whiteUsername().equals(username)) {
                 color = ChessGame.TeamColor.WHITE;
             } else if (game.whiteUsername() == null ||
-                    game.whiteUsername.equals(username)) {
+                    game.whiteUsername().equals(username)) {
             }
         }
         facade.joinGame(authToken, color, game.gameID());
-        return new GameState();
+        return new GameState(color == ChessGame.TeamColor.BLACK, username, authToken);
     }
 
     private ClientState watchGame(String[] args, ServerFacade facade)
             throws Exception {
-        return new GameState();
+        return new GameState(false, username, authToken);
     }
 }

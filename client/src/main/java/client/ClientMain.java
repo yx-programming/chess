@@ -36,7 +36,8 @@ public class ClientMain {
 
                 state = state.action(command, commandArgs, facade);
             } catch (Exception e) {
-                System.out.println(EscapeSequences.SET_TEXT_COLOR_RED +
+                System.out.println(EscapeSequences.ERASE_LINE +
+                    EscapeSequences.SET_TEXT_COLOR_RED +
                     "error: " + EscapeSequences.RESET_TEXT_COLOR +
                     e.getMessage());
             }
