@@ -84,4 +84,18 @@ public class ServerFacadeTests {
         Assertions.assertThrows(Exception.class,
             () -> facade.createGame("bad auth", "test"));
     }
+
+    @Test public void listGamesTestPositive() throws Exception {
+        String auth = facade.register("fred", "pass", "email");
+        Assertions.assertTrue(facade.listGames(auth).size() == 0);
+        facade.createGame(auth, "test");
+        Assertions.assertTrue(facade.listGames(auth).get(0).gameName()
+            .equals("test"));
+    }
+
+    @Test
+    public void listGamesTestNegative() throws Exception {
+        Assertions.assertThrows(Exception.class,
+            () -> facade.listGames("bad auth"));
+    }
 }

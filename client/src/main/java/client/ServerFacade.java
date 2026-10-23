@@ -42,8 +42,9 @@ public class ServerFacade {
     public record GameInfo(int gameID, String whiteUsername,
         String blackUsername, String gameName) {}
     private record Games(List<GameInfo> games) {}
-    public void listGames(String authToken) throws Exception {
-        
+    public List<GameInfo> listGames(String authToken) throws Exception {
+        String result = httpRequest("game", "GET", null, authToken);
+        return new Gson().fromJson(result, Games.class).games();
     }
 
     private record AuthResult(String username, String authToken) {}
