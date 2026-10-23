@@ -118,8 +118,8 @@ public class ServerFacadeTests {
         Assertions.assertThrows(Exception.class,
             () -> facade.joinGame("bad auth", ChessGame.TeamColor.WHITE, id));
         String auth2 = facade.register("other fred", "pass", "email2");
-        facade.joinGame(auth, ChessGame.TeamColor.WHITE, id);
+        facade.joinGame(auth, ChessGame.TeamColor.BLACK, id);
         Assertions.assertThrows(Exception.class,
-            () -> facade.joinGame(auth2, ChessGame.TeamColor.WHITE, id));
+            () -> facade.joinGame(auth2, ChessGame.TeamColor.BLACK, id));
     }
 }

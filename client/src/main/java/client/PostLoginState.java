@@ -1,8 +1,10 @@
 package client;
 
 public class PostLoginState extends ClientState {
-    public PostLoginState() {
-
+    private String authToken;
+    
+    public PostLoginState(String authToken) {
+        this.authToken = authToken;
     }
 
     public String prompt() {

@@ -81,20 +81,24 @@ public class ServerFacade {
             }
 
         }
+        String line;
+        var response = new StringBuilder();
         try (var in = conn.getInputStream()) {
             var rd = new BufferedReader(new InputStreamReader(in));
-            var response = new StringBuilder();
-            String line;
             while ((line = rd.readLine()) != null) {
                 response.append(line);
             }
             rd.close();
-            String result = response.toString();
-            if (result.contains("message")) {
-                var err = new Gson().fromJson(result, ClientError.class);
-                throw new Exception(err.message());
+            return response.toString();
+        } catch (Exception e) {
+            var in = conn.getErrorStream();
+            var rd = new BufferedReader(new InputStreamReader(in));
+            while ((line = rd.readLine()) != null) {
+                response.append(line);
             }
-            return result;
+            var err = new Gson().fromJson(response.toString(),
+                ClientError.class);
+            throw new Exception(err.message());
         }
     }
 };
