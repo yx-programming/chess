@@ -13,15 +13,16 @@ public class ServerFacade {
     }
 
 
-    public void register() throws Exception {
-        System.out.println(httpRequest("register", "POST", "{\"username\":\"fred\",\"password\":\"pass\",\"email\":\"testemail\"}", null));
+    public String register(String username, String password, String email)
+            throws Exception {
+        return httpRequest("user", "POST",
+            "{\"username\":\"" + username + "\",\"password\":\"" + password +
+            "\",\"email\":\"" + email + "\"}", null);
     }
 
     protected String httpRequest(String endpoint, String method, String body,
             String authHeader) throws Exception {
-        var urlString = "http://" + baseUrl + ":" + port + "/" + endpoint;
-        System.out.println("FINDME: " + urlString);
-        var url = new URL(urlString);
+        var url = new URL("http://" + baseUrl + ":" + port + "/" + endpoint);
         var conn = (HttpURLConnection)url.openConnection();
         conn.setRequestMethod(method);
         if (authHeader != null) {
