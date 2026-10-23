@@ -19,13 +19,13 @@ public class PreLoginState extends ClientState {
     }
 
     public ClientState help(String[] args, ServerFacade facade) {
-        System.out.println(EscapeSequences.SET_TEXT_COLOR_BLUE);
+        System.out.print(EscapeSequences.SET_TEXT_COLOR_BLUE);
         System.out.println("help - list currently valid commands");
         System.out.println("quit - exit the application");
         System.out.println("login <USERNAME> <PASSWORD> - login to the server");
         System.out.print("register <USERNAME> <PASSWORD> <EMAIL> - ");
         System.out.println("register a new user on the server");
-        System.out.println(EscapeSequences.RESET_TEXT_COLOR);
+        System.out.print(EscapeSequences.RESET_TEXT_COLOR);
         return this;
     }
 
