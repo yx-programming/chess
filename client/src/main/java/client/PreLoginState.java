@@ -15,7 +15,7 @@ public class PreLoginState extends ClientState {
     }
 
     public String prompt() {
-        return "";
+        return "[logged out]";
     }
 
     public ClientState help(String[] args) {

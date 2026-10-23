@@ -4,16 +4,24 @@ import java.net.*;
 import java.io.*;
 
 public class ServerFacade {
-    private URL url;
+    private String baseUrl;
     private int port;
     
-    public ServerFacade(String url, int port) throws MalformedURLException {
-        this.url = new URL(url + ":" + port);
+    public ServerFacade(String url, int port) {
+        baseUrl = url;
         this.port = port;
     }
 
-    private String httpRequest(String method, String body, String authHeader)
-            throws IOException {
+
+    public void register() throws Exception {
+        System.out.println(httpRequest("register", "POST", "{\"username\":\"fred\",\"password\":\"pass\",\"email\":\"testemail\"}", null));
+    }
+
+    protected String httpRequest(String endpoint, String method, String body,
+            String authHeader) throws Exception {
+        var urlString = "http://" + baseUrl + ":" + port + "/" + endpoint;
+        System.out.println("FINDME: " + urlString);
+        var url = new URL(urlString);
         var conn = (HttpURLConnection)url.openConnection();
         conn.setRequestMethod(method);
         if (authHeader != null) {

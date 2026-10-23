@@ -7,12 +7,14 @@ import server.Server;
 public class ServerFacadeTests {
 
     private static Server server;
+    private static ServerFacade facade;
 
     @BeforeAll
-    public static void init() {
+    public static void init() throws Exception {
         server = new Server();
         var port = server.run(0);
         System.out.println("Started test HTTP server on " + port);
+        facade = new ServerFacade("localhost", port);
     }
 
     @AfterAll
@@ -20,10 +22,13 @@ public class ServerFacadeTests {
         server.stop();
     }
 
+    @BeforeEach
+    public void clear() throws Exception {
+        facade.httpRequest("db", "DELETE", null, null);
+    }
 
     @Test
     public void sampleTest() {
         Assertions.assertTrue(true);
     }
-
 }
