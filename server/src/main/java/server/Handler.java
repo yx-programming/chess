@@ -5,6 +5,7 @@ import java.util.Map;
 import com.google.gson.*;
 import io.javalin.*;
 import io.javalin.http.*;
+import io.javalin.websocket.*;
 
 import chess.*;
 import dataaccess.*;
@@ -159,5 +160,9 @@ public class Handler {
         } catch (Exception e) {
             handleErrors(context, e);
         }
+    }
+
+    public void wsMessage(WsMessageContext context) {
+        System.out.println("received message");
     }
 }

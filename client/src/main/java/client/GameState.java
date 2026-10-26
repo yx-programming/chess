@@ -3,6 +3,8 @@ package client;
 import chess.*;
 import ui.*;
 
+import java.io.*;
+import java.net.*;
 import java.util.*;
 
 public class GameState extends ClientState {
@@ -14,13 +16,15 @@ public class GameState extends ClientState {
     private String authToken;
     private boolean isPlaying;
     private Collection<ChessPosition> highlightPositions;
+    private WebsocketClient ws;
 
     public GameState(boolean blackPerspective, String username,
-            String authToken, boolean isPlaying) {
+            String authToken, boolean isPlaying) throws Exception {
         this.blackPerspective = blackPerspective;
         this.isPlaying = isPlaying;
         board = new ChessBoard();
         board.resetBoard();
+        ws = new WebsocketClient("localhost", 8080);
         if (isPlaying) {
             commands = Map.of(
                 "help", this::help,
