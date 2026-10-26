@@ -84,13 +84,13 @@ public class PostLoginState extends ClientState {
                 System.out.println("BLACK: " +
                     EscapeSequences.SET_TEXT_COLOR_GREEN + "Available");
             } else if (game.blackUsername().equals(username)) {
-                System.out.print("BLACK: " +
+                System.out.println("BLACK: " +
                     EscapeSequences.SET_TEXT_COLOR_YELLOW + "Available (" +
-                    game.blackUsername() + "), ");
+                    game.blackUsername() + ")");
             } else {
-                System.out.print("BLACK: " +
+                System.out.println("BLACK: " +
                     EscapeSequences.SET_TEXT_COLOR_RED + "Unavailable (" +
-                    game.blackUsername() + "), ");
+                    game.blackUsername() + ")");
             }
             System.out.print(EscapeSequences.RESET_TEXT_COLOR);
             i++;
@@ -136,11 +136,12 @@ public class PostLoginState extends ClientState {
             }
         }
         facade.joinGame(authToken, color, game.gameID());
-        return new GameState(color == ChessGame.TeamColor.BLACK, username, authToken);
+        return new GameState(color == ChessGame.TeamColor.BLACK, username,
+            authToken, true);
     }
 
     private ClientState watchGame(String[] args, ServerFacade facade)
             throws Exception {
-        return new GameState(false, username, authToken);
+        return new GameState(false, username, authToken, false);
     }
 }
