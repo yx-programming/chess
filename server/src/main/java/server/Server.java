@@ -23,6 +23,11 @@ public class Server {
         javalin.post("/game", handler::createGameEndpoint);
         javalin.put("/game", handler::joinGameEndpoint);
         javalin.delete("/db", handler::clearDBEndpoint);
+
+        javalin.ws("/ws", ws -> {
+            ws.onConnect(ctx -> ctx.enableAutomaticPings());
+            ws.onClose(ctx -> {});
+        });
     }
 
     public int run(int desiredPort) {
