@@ -20,9 +20,10 @@ public class GameService {
         return game.newGame(name);
     }
 
-    public void joinGame(int id, ChessGame.TeamColor color, String name)
+    public ChessGame joinGame(int id, ChessGame.TeamColor color, String name)
             throws DataAccessException {
-        game.joinGame(id, color, name);
+        var info = game.joinGame(id, color, name);
+        return info.getGame();
     }
 
     public void clear() throws DataAccessException {

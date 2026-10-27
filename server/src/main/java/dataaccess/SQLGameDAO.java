@@ -53,7 +53,18 @@ public class SQLGameDAO implements GameDAO {
         });
     }
 
-    public void joinGame(int id, ChessGame.TeamColor color,
+    public void updateGame(GameInfo game) throws DataAccessException {
+        var statementString = """
+            update games set whiteUser=?, blackUser=? where id=?""";
+        SQLCommand.execute(statementString, statement -> {
+            statement.setString(1, game.getWhiteUser());
+            statement.setString(2, game.getBlackUser());
+            statement.setInt(3, game.getID());
+            return statement.executeUpdate();
+        });
+    }
+
+    public GameInfo joinGame(int id, ChessGame.TeamColor color,
             String username) throws DataAccessException {
         var queryString = """
             select whiteUser, blackUser, gameName, game from games
@@ -86,14 +97,8 @@ public class SQLGameDAO implements GameDAO {
             } 
             gameToJoin.setBlackUser(username);
         }
-        var statementString = """
-            update games set whiteUser=?, blackUser=? where id=?""";
-        SQLCommand.execute(statementString, statement -> {
-            statement.setString(1, gameToJoin.getWhiteUser());
-            statement.setString(2, gameToJoin.getBlackUser());
-            statement.setInt(3, id);
-            return statement.executeUpdate();
-        });
+        updateGame(gameToJoin);
+        return gameToJoin;
     }
     public void clear() throws DataAccessException {
         var statementString = "truncate table games;";

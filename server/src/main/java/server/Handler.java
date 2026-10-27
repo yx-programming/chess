@@ -12,8 +12,10 @@ import dataaccess.*;
 import model.*;
 import service.*;
 import websocket.commands.*;
+import websocket.messages.*;
 
 import java.util.*;
+import java.util.concurrent.*;
 
 public class Handler {
     private UserService userService;
@@ -163,8 +165,15 @@ public class Handler {
         }
     }
 
-    public void wsMessage(WsMessageContext context) {
-        var command = new Gson().fromJson(context.message(), UserGameCommand.class);
-        System.out.println("got: " + command.getCommandType());
+    private Map<UserGameCommand.CommandType, Callable<ServerMessage>>
+            commands = Map.of(
+        UserGameCommand.CommandType.CONNECT, () -> {
+            return null;            
+        }
+    );
+    public void wsMessage(WsMessageContext context) throws Exception {
+        var command = new Gson().fromJson(context.message(),
+            UserGameCommand.class);
+        var response = commands.get(command).call();
     }
 }

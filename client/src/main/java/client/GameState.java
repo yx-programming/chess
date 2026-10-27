@@ -3,10 +3,12 @@ package client;
 import chess.*;
 import ui.*;
 import websocket.commands.*;
+import websocket.messages.*;
 
 import java.io.*;
 import java.net.*;
 import java.util.*;
+import java.util.concurrent.*;
 
 import com.google.gson.*;
 
@@ -58,8 +60,15 @@ public class GameState extends ClientState implements Observer {
         ws.send(connect);
     }
 
-    public void message(String message) {
-        System.out.println(message);
+    private Map<ServerMessage.ServerMessageType, Callable<UserGameCommand>>
+            messages = Map.of(
+        ServerMessage.ServerMessageType.LOAD_GAME, () -> {
+            return null;
+        }
+    );
+    public void message(String message) throws Exception {
+        var serverMessage = new Gson().fromJson(message, ServerMessage.class);
+        var response = messages.get(serverMessage).call();
     }
 
     public ClientState help(String[] args, ServerFacade facade) {

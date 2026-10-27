@@ -24,7 +24,11 @@ public class MemGameDAO implements GameDAO {
         return currentID++;
     }
 
-    public void joinGame(int id, ChessGame.TeamColor color, String username)
+    public void updateGame(GameInfo game) {
+        games.put(game.getID(), game);
+    }
+
+    public GameInfo joinGame(int id, ChessGame.TeamColor color, String username)
             throws DataAccessException {
         GameInfo gameInfo = games.get(id);
         if (gameInfo == null) {
@@ -43,6 +47,7 @@ public class MemGameDAO implements GameDAO {
             }
             gameInfo.setBlackUser(username);
         }
+        return gameInfo;
     }
 
     public void clear() throws DataAccessException {

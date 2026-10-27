@@ -10,10 +10,11 @@ import com.google.gson.*;
 import websocket.commands.*;
 
 interface Observer {
-    public void message(String message);
+    public void message(String message) throws Exception;
 }
 
-public class WebsocketClient extends Endpoint {
+public class WebsocketClient extends Endpoint implements
+        MessageHandler.Whole<String> {
     private Session session;
     private Collection<Observer> observers;
 
@@ -23,13 +24,18 @@ public class WebsocketClient extends Endpoint {
         session = container.connectToServer(this, uri);
         observers = new HashSet();
 
-        session.addMessageHandler(new MessageHandler.Whole<String>() {
-            public void onMessage(String message) {
-                for (var observer : observers) {
-                    observer.message(message);
-                }
+        session.addMessageHandler(this);
+    }
+
+    @Override
+    public void onMessage(String message) {
+        for (var observer : observers) {
+            try {
+                observer.message(message);
+            } catch (Exception e) {
+                System.out.println(e.getMessage());
             }
-        });
+        }
     }
 
     public void subscribe(Observer observer) {
