@@ -11,6 +11,7 @@ import chess.*;
 import dataaccess.*;
 import model.*;
 import service.*;
+import websocket.commands.*;
 
 import java.util.*;
 
@@ -163,6 +164,7 @@ public class Handler {
     }
 
     public void wsMessage(WsMessageContext context) {
-        System.out.println("received message");
+        var command = new Gson().fromJson(context.message(), UserGameCommand.class);
+        System.out.println("got: " + command.getCommandType());
     }
 }

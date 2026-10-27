@@ -2,12 +2,17 @@ package client;
 
 import chess.*;
 import ui.*;
+import websocket.commands.*;
 
 import java.io.*;
 import java.net.*;
 import java.util.*;
 
-public class GameState extends ClientState {
+import com.google.gson.*;
+
+import jakarta.websocket.*;
+
+public class GameState extends ClientState implements Observer {
     private boolean blackPerspective;
     // for the time being use a blank chessboard but we'll plug in the
     // real thing eventually
@@ -15,16 +20,17 @@ public class GameState extends ClientState {
     private String username;
     private String authToken;
     private boolean isPlaying;
+    private int gameID;
     private Collection<ChessPosition> highlightPositions;
     private WebsocketClient ws;
 
     public GameState(boolean blackPerspective, String username,
-            String authToken, boolean isPlaying) throws Exception {
+            String authToken, int gameID, boolean isPlaying) throws Exception {
         this.blackPerspective = blackPerspective;
+        this.gameID = gameID;
         this.isPlaying = isPlaying;
         board = new ChessBoard();
         board.resetBoard();
-        ws = new WebsocketClient("localhost", 8080);
         if (isPlaying) {
             commands = Map.of(
                 "help", this::help,
@@ -44,7 +50,16 @@ public class GameState extends ClientState {
         this.username = username;
         this.authToken = authToken;
         highlightPositions = new HashSet();
-        System.out.println(boardString(this.board));
+        // TODO: thread host/port values into constructor
+        ws = new WebsocketClient("localhost", 8080);
+        ws.subscribe(this);
+        var connect = new UserGameCommand(UserGameCommand.CommandType.CONNECT,
+            authToken, gameID);
+        ws.send(connect);
+    }
+
+    public void message(String message) {
+        System.out.println(message);
     }
 
     public ClientState help(String[] args, ServerFacade facade) {

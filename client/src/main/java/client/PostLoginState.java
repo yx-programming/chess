@@ -98,23 +98,29 @@ public class PostLoginState extends ClientState {
         return this;
     }
 
-    private ClientState joinGame(String[] args, ServerFacade facade)
-            throws Exception {
+    private int validateGameID(String listId) throws Exception {
         if (games == null) {
             throw new Exception("no games have been listed to select from");
         }
-        if (args.length < 1 || args.length > 2) {
-            throw new Exception("expected game id, with optional team color");
-        } 
         int id;
         try {
-            id = Integer.parseInt(args[0]) - 1;
+            id = Integer.parseInt(listId) - 1;
         } catch (Exception e) {
-            throw new Exception("game id must be a number (look at the game list");
+            throw new Exception(
+                "game id must be a number (look at the game list)");
         }
         if (id < 0 || id > games.size() - 1) {
             throw new Exception("id must be in the game list");
         }
+        return id;
+    }
+
+    private ClientState joinGame(String[] args, ServerFacade facade)
+            throws Exception {
+        if (args.length < 1 || args.length > 2) {
+            throw new Exception("expected game id, with optional team color");
+        } 
+        int id = validateGameID(args[0]);
         var game = games.get(id);
         if (game == null) {
             throw new Exception("game with id " + id + " doesn't exist");
@@ -137,11 +143,18 @@ public class PostLoginState extends ClientState {
         }
         facade.joinGame(authToken, color, game.gameID());
         return new GameState(color == ChessGame.TeamColor.BLACK, username,
-            authToken, true);
+            authToken, id, true);
     }
 
     private ClientState watchGame(String[] args, ServerFacade facade)
             throws Exception {
-        return new GameState(false, username, authToken, false);
+        if (args.length == 0) {
+            throw new Exception("expected a game ID (check the game list)");
+        }
+        int gameID = validateGameID(args[0]);
+        if (games.get(gameID) == null) {
+            throw new Exception("game not listed");
+        }
+        return new GameState(false, username, authToken, gameID, false);
     }
 }
