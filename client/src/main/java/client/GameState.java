@@ -104,8 +104,23 @@ public class GameState extends ClientState implements Observer {
         return this;
     }
 
+    private ChessPosition validatePosition(String arg) throws Exception {
+        int col = arg.charAt(0) - 'a' + 1;
+        if (col < 1 || col > 8) {
+            throw new Exception("file must be a-h");
+        }
+        int row = arg.charAt(1) - '0';
+        if (row < 1 || row > 8) {
+            throw new Exception("rank must be 1-8");
+        }
+        return = new ChessPosition(row, col);
+    }
+
     public ClientState move(String[] args, ServerFacade facade)
             throws Exception {
+        if (args.length != 2) {
+            throw new Exception("expected two board positions (start and end)");
+        }
         return this;
     }
 
@@ -119,16 +134,8 @@ public class GameState extends ClientState implements Observer {
         if (args.length != 1 || args[0].length() != 2) {
             throw new Exception("expected one board position [ex: e4]");
         }
-        int col = args[0].charAt(0) - 'a' + 1;
-        if (col < 1 || col > 8) {
-            throw new Exception("file must be a-h");
-        }
-        int row = args[0].charAt(1) - '0';
-        if (row < 1 || row > 8) {
-            throw new Exception("rank must be 1-8");
-        }
-        var pos = new ChessPosition(row, col);
-        var piece = board.getPiece(new ChessPosition(row, col));
+        var pos = validatePosition(arg[0]);
+        var piece = board.getPiece(pos);
         if (piece == null) {
             throw new Exception("no piece at " + args[0]);
         }
