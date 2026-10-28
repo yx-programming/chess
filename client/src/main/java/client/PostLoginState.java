@@ -143,7 +143,7 @@ public class PostLoginState extends ClientState {
         }
         facade.joinGame(authToken, color, game.gameID());
         return new GameState(color == ChessGame.TeamColor.BLACK, username,
-            authToken, id, true);
+            authToken, game.gameID(), true);
     }
 
     private ClientState watchGame(String[] args, ServerFacade facade)

@@ -14,7 +14,7 @@ public class GameInfo {
         whiteUsername = whiteUser;
         blackUsername = blackUser;
         gameName = name;
-        game = game;
+        this.game = game;
     }
 
     public int getID() { return gameID; }

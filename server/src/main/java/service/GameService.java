@@ -26,6 +26,10 @@ public class GameService {
         return info.getGame();
     }
 
+    public GameInfo getGame(int id) throws DataAccessException {
+        return game.getGame(id);
+    }
+
     public void clear() throws DataAccessException {
         game.clear();
     }

@@ -16,11 +16,21 @@ public class UserGameCommand {
 
     private final Integer gameID;
 
+    private String extraData = "";
+
     public UserGameCommand(CommandType commandType, String authToken,
             Integer gameID) {
         this.commandType = commandType;
         this.authToken = authToken;
         this.gameID = gameID;
+    }
+
+    public void addData(String s) {
+        extraData += s;
+    }
+
+    public String getData() {
+        return extraData;
     }
 
     public enum CommandType {

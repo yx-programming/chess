@@ -1,7 +1,6 @@
 package client;
 
-import chess.*;
-import ui.*;
+import chess.*; import ui.*;
 import websocket.commands.*;
 import websocket.messages.*;
 
@@ -60,15 +59,25 @@ public class GameState extends ClientState implements Observer {
         ws.send(connect);
     }
 
-    private Map<ServerMessage.ServerMessageType, Callable<UserGameCommand>>
-            messages = Map.of(
-        ServerMessage.ServerMessageType.LOAD_GAME, () -> {
+    private interface Message {
+        public UserGameCommand call(ServerMessage message) throws Exception;
+    }
+    private Map<ServerMessage.ServerMessageType, Message> messages = Map.of(
+        ServerMessage.ServerMessageType.LOAD_GAME, message -> {
+            board = ChessGame.fromSerialized(message.getData()).getBoard();
+            System.out.println(boardString(board));
             return null;
         }
     );
     public void message(String message) throws Exception {
         var serverMessage = new Gson().fromJson(message, ServerMessage.class);
-        var response = messages.get(serverMessage).call();
+        System.out.println("recvd");
+        var response = messages.get(serverMessage.getServerMessageType()).
+            call(serverMessage);
+        if (response != null) {
+            ws.send(response);
+        }
+        System.out.print(prompt() + "> ");
     }
 
     public ClientState help(String[] args, ServerFacade facade) {
@@ -77,7 +86,7 @@ public class GameState extends ClientState implements Observer {
         System.out.println("redraw - redraw the board");
         System.out.println("quit - leave the game");
         if (isPlaying) {
-            System.out.println("move <move> - move your piece (algebraic notation");
+            System.out.println("move <start> <end> - move your piece (algebraic notation");
             System.out.println("resign - forfeit the match");
             System.out.println("highlight <position> - show valid moves for the piece at <position>");
         }

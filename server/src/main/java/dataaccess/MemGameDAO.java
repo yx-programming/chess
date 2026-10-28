@@ -24,6 +24,10 @@ public class MemGameDAO implements GameDAO {
         return currentID++;
     }
 
+    public GameInfo getGame(int id) {
+        return games.get(id);
+    }
+
     public void updateGame(GameInfo game) {
         games.put(game.getID(), game);
     }

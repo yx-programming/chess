@@ -49,8 +49,30 @@ public class SQLGameDAO implements GameDAO {
             statement.setString(2, new ChessGame().serialize());
             statement.executeUpdate();
             var ids = statement.getGeneratedKeys();
-            return (ids.next()) ? ids.getInt(1) : 0;
+            return (ids.next()) ? ids.getInt(1) : -1;
         });
+    }
+
+    public GameInfo getGame(int id) throws DataAccessException {
+        var queryString = """
+            select whiteUser, blackUser, gameName, game from games
+            where id = ?;""";
+        var game = SQLCommand.execute(queryString, statement -> {
+            statement.setInt(1, id);
+            try (var rs = statement.executeQuery()) {
+                if (rs.next()) {
+                    var white = rs.getString(1);
+                    var black = rs.getString(2);
+                    var name = rs.getString(3);
+                    var gameString = rs.getString(4);
+                    var chessGame = ChessGame.fromSerialized(gameString);
+                    return new GameInfo(id, white, black, name, chessGame);
+                } else {
+                    throw new DataAccessException("game does not exist");
+                }
+            }
+        });
+        return game;
     }
 
     public void updateGame(GameInfo game) throws DataAccessException {
@@ -66,24 +88,7 @@ public class SQLGameDAO implements GameDAO {
 
     public GameInfo joinGame(int id, ChessGame.TeamColor color,
             String username) throws DataAccessException {
-        var queryString = """
-            select whiteUser, blackUser, gameName, game from games
-            where id = ?;""";
-        var gameToJoin = SQLCommand.execute(queryString, statement -> {
-            statement.setInt(1, id);
-            try (var rs = statement.executeQuery()) {
-                if (rs.next()) {
-                    var white = rs.getString(1);
-                    var black = rs.getString(2);
-                    var name = rs.getString(3);
-                    var gameString = rs.getString(4);
-                    var game = ChessGame.fromSerialized(gameString);
-                    return new GameInfo(id, white, black, name, game);
-                } else {
-                    throw new DataAccessException("game does not exist");
-                }
-            }
-        });
+        var gameToJoin = getGame(id);
         if (color == ChessGame.TeamColor.WHITE) {
             if (gameToJoin.getWhiteUser() != null &&
                     !username.equals(gameToJoin.getWhiteUser())) {

@@ -11,6 +11,8 @@ import java.util.Objects;
 public class ServerMessage {
     ServerMessageType serverMessageType;
 
+    private String extraData = "";
+    
     public enum ServerMessageType {
         LOAD_GAME,
         ERROR,
@@ -19,6 +21,14 @@ public class ServerMessage {
 
     public ServerMessage(ServerMessageType type) {
         this.serverMessageType = type;
+    }
+
+    public void addData(String s) {
+        extraData += s;
+    }
+
+    public String getData() {
+        return extraData;
     }
 
     public ServerMessageType getServerMessageType() {

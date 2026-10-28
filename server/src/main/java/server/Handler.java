@@ -165,15 +165,26 @@ public class Handler {
         }
     }
 
-    private Map<UserGameCommand.CommandType, Callable<ServerMessage>>
-            commands = Map.of(
-        UserGameCommand.CommandType.CONNECT, () -> {
-            return null;            
+    private interface Command {
+        public ServerMessage call(UserGameCommand command) throws Exception;
+    }
+    private Map<UserGameCommand.CommandType, Command> commands = Map.of(
+        UserGameCommand.CommandType.CONNECT, command -> {
+            authService.getAuthFromToken(command.getAuthToken());
+            var game = gameService.getGame(command.getGameID()).getGame();
+            var message = new ServerMessage(
+                ServerMessage.ServerMessageType.LOAD_GAME);
+            message.addData(game.serialize());
+            return message;
         }
     );
     public void wsMessage(WsMessageContext context) throws Exception {
         var command = new Gson().fromJson(context.message(),
             UserGameCommand.class);
-        var response = commands.get(command).call();
+        var response = commands.get(command.getCommandType()).call(command);
+        if (response != null) {
+            var jsonString = new Gson().toJson(response);
+            context.send(jsonString);
+        }
     }
 }
