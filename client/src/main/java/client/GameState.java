@@ -15,8 +15,6 @@ import jakarta.websocket.*;
 
 public class GameState extends ClientState implements Observer {
     private boolean blackPerspective;
-    // for the time being use a blank chessboard but we'll plug in the
-    // real thing eventually
     private ChessBoard board;
     private String username;
     private String authToken;
@@ -65,22 +63,23 @@ public class GameState extends ClientState implements Observer {
     private Map<ServerMessage.ServerMessageType, Message> messages = Map.of(
         ServerMessage.ServerMessageType.LOAD_GAME, message -> {
             board = ChessGame.fromSerialized(message.getData()).getBoard();
-            System.out.println(boardString(board));
+            redraw();
             return null;
         }
     );
     public void message(String message) throws Exception {
         var serverMessage = new Gson().fromJson(message, ServerMessage.class);
-        System.out.println("recvd");
         var response = messages.get(serverMessage.getServerMessageType()).
             call(serverMessage);
         if (response != null) {
             ws.send(response);
         }
+        redraw();
         System.out.print(prompt() + "> ");
     }
 
     public ClientState help(String[] args, ServerFacade facade) {
+        System.out.println(EscapeSequences.moveCursorToLocation(0, 0));
         System.out.print(EscapeSequences.SET_TEXT_COLOR_BLUE);
         System.out.println("help - list currently valid commands");
         System.out.println("redraw - redraw the board");
@@ -100,20 +99,8 @@ public class GameState extends ClientState implements Observer {
     }
 
     public ClientState redraw(String[] args, ServerFacade facade) {
-        System.out.println(boardString(this.board));
+        redraw();
         return this;
-    }
-
-    private ChessPosition validatePosition(String arg) throws Exception {
-        int col = arg.charAt(0) - 'a' + 1;
-        if (col < 1 || col > 8) {
-            throw new Exception("file must be a-h");
-        }
-        int row = arg.charAt(1) - '0';
-        if (row < 1 || row > 8) {
-            throw new Exception("rank must be 1-8");
-        }
-        return = new ChessPosition(row, col);
     }
 
     public ClientState move(String[] args, ServerFacade facade)
@@ -134,7 +121,7 @@ public class GameState extends ClientState implements Observer {
         if (args.length != 1 || args[0].length() != 2) {
             throw new Exception("expected one board position [ex: e4]");
         }
-        var pos = validatePosition(arg[0]);
+        var pos = ChessPosition.fromAlgebraic(args[0]);
         var piece = board.getPiece(pos);
         if (piece == null) {
             throw new Exception("no piece at " + args[0]);
@@ -148,7 +135,7 @@ public class GameState extends ClientState implements Observer {
         for (var move : moves) {
             highlightPositions.add(move.getEndPosition());
         }
-        System.out.println(boardString(board));
+        redraw();
         highlightPositions.clear();
         return this;
     }

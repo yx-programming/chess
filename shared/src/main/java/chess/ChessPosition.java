@@ -58,4 +58,16 @@ public class ChessPosition {
     public ChessPosition withOffset(int row, int col) {
         return new ChessPosition(this.row + row, this.col + col);
     }
+
+    public static ChessPosition fromAlgebraic(String arg) throws Exception {
+        int col = arg.charAt(0) - 'a' + 1;
+        if (col < 1 || col > 8) {
+            throw new Exception("file must be a-h");
+        }
+        int row = arg.charAt(1) - '0';
+        if (row < 1 || row > 8) {
+            throw new Exception("rank must be 1-8");
+        }
+        return new ChessPosition(row, col);
+    }
 }

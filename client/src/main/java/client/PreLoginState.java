@@ -12,6 +12,7 @@ public class PreLoginState extends ClientState {
             "login", this::login,
             "register", this::register
         );
+        this.ui = new UIWrapper("[logged out]");
     }
 
     public String prompt() {
@@ -19,18 +20,17 @@ public class PreLoginState extends ClientState {
     }
 
     public ClientState help(String[] args, ServerFacade facade) {
-        System.out.print(EscapeSequences.SET_TEXT_COLOR_BLUE);
-        System.out.println("help - list currently valid commands");
-        System.out.println("quit - exit the application");
-        System.out.println("login <USERNAME> <PASSWORD> - login to the server");
-        System.out.print("register <USERNAME> <PASSWORD> <EMAIL> - ");
-        System.out.println("register a new user on the server");
-        System.out.print(EscapeSequences.RESET_TEXT_COLOR);
+        log("help - list currently valid commands", UIWrapper.BLUE);
+        log("quit - exit the application", UIWrapper.BLUE);
+        log("login <USERNAME> <PASSWORD> - login to the server",
+            UIWrapper.BLUE);
+        log("register <USERNAME> <PASSWORD> <EMAIL> - register an account",
+            UIWrapper.BLUE);
         return this;
     }
 
     public ClientState quit(String[] args, ServerFacade facade) {
-        System.out.println("goodbye");
+        log("goodbye", UIWrapper.WHITE);
         return null;
     }
 

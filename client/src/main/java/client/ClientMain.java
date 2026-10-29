@@ -13,16 +13,16 @@ public class ClientMain {
         }
         var facade = new ServerFacade(args[0], Integer.parseInt(args[1]));
         
-        System.out.println(EscapeSequences.SET_TEXT_COLOR_GREEN + 
-            "SHALL WE PLAY A GAME?" + EscapeSequences.RESET_TEXT_COLOR);
-        System.out.println("Type help for instructions");
-        Scanner scan = new Scanner(System.in);
         ClientState state = new PreLoginState();
+        state.log("SHALL WE PLAY A GAME?", UIWrapper.GREEN);
+        state.log("Type help for instructions", UIWrapper.WHITE);
+        Scanner scan = new Scanner(System.in);
         do {
             String command = null;
             String[] commandArgs = new String[]{};
             try {
-                System.out.print(state.prompt() + "> ");
+                state.redraw();
+                System.out.print("> ");
                 String commandLine = scan.nextLine().toLowerCase();
                 String[] commandWithArgs = commandLine.split(" ");
                 if (commandWithArgs.length == 0) {
@@ -36,10 +36,7 @@ public class ClientMain {
 
                 state = state.action(command, commandArgs, facade);
             } catch (Exception e) {
-                System.out.println(EscapeSequences.ERASE_LINE +
-                    EscapeSequences.SET_TEXT_COLOR_RED +
-                    "error: " + EscapeSequences.RESET_TEXT_COLOR +
-                    e.getMessage());
+                state.log("error: " + e.getMessage(), UIWrapper.RED);
             }
         } while (state != null);
     }
