@@ -1,6 +1,7 @@
 package client;
 
 import chess.*;
+import websocket.commands.*;
 
 import java.net.*;
 import java.io.*;
@@ -9,12 +10,26 @@ import com.google.gson.*;
 
 public class ServerFacade {
     private record ClientError(String message) {}
-    private String baseUrl;
+    private String host;
     private int port;
+    private WebsocketClient ws;
 
-    public ServerFacade(String url, int port) {
-        baseUrl = url;
+    public ServerFacade(String host, int port) {
+        this.host = host;
         this.port = port;
+        this.ws = new WebsocketClient();
+    }
+
+    public void connectWS() throws Exception {
+        ws.connect(host, port);
+    }
+
+    public void sendWS(UserGameCommand command) throws Exception {
+        ws.send(command);
+    }
+
+    public void registerObserver(Observer observer) {
+        ws.subscribe(observer);
     }
 
     public String register(String username, String password, String email)
@@ -65,7 +80,7 @@ public class ServerFacade {
 
     protected String httpRequest(String endpoint, String method, String body,
             String authHeader) throws Exception {
-        var url = new URL("http://" + baseUrl + ":" + port + "/" + endpoint);
+        var url = new URL("http://" + host + ":" + port + "/" + endpoint);
         var conn = (HttpURLConnection)url.openConnection();
         conn.setRequestMethod(method);
         if (authHeader != null) {

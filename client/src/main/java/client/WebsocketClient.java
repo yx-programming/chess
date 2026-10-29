@@ -10,15 +10,15 @@ import com.google.gson.*;
 import websocket.commands.*;
 
 interface Observer {
-    public void message(String message) throws Exception;
+    public UserGameCommand message(String message) throws Exception;
 }
 
 public class WebsocketClient extends Endpoint implements
         MessageHandler.Whole<String> {
     private Session session;
     private Collection<Observer> observers;
-
-    public WebsocketClient(String host, int port) throws Exception {
+        
+    public void connect(String host, int port) throws Exception {
         var uri = new URI("ws://" + host + ":" + port + "/ws");
         var container = ContainerProvider.getWebSocketContainer();
         session = container.connectToServer(this, uri);
@@ -31,7 +31,10 @@ public class WebsocketClient extends Endpoint implements
     public void onMessage(String message) {
         for (var observer : observers) {
             try {
-                observer.message(message);
+                var command = observer.message(message);
+                if (command != null) {
+                    send(command);
+                }
             } catch (Exception e) {
                 System.out.println(e.getMessage());
             }

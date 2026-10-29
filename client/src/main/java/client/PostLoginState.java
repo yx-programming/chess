@@ -2,6 +2,7 @@ package client;
 
 import chess.*;
 import ui.*;
+import websocket.commands.*;
 
 import java.util.*;
 
@@ -133,8 +134,14 @@ public class PostLoginState extends ClientState {
             }
         }
         facade.joinGame(authToken, color, game.gameID());
-        return new GameState(color == ChessGame.TeamColor.BLACK, username,
+        facade.connectWS();
+        var state = new GameState(color == ChessGame.TeamColor.BLACK, username,
             authToken, game.gameID(), true);
+        var command = new UserGameCommand(UserGameCommand.CommandType.CONNECT,
+            authToken, game.gameID());
+        facade.sendWS(command);
+        facade.registerObserver(state);
+        return state;
     }
 
     private ClientState watchGame(String[] args, ServerFacade facade)

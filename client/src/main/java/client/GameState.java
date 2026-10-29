@@ -20,7 +20,6 @@ public class GameState extends ClientState implements Observer {
     private boolean isPlaying;
     private int gameID;
     private ChessPosition highlightPos;
-    private WebsocketClient ws;
 
     public GameState(boolean boardFlipped, String username,
             String authToken, int gameID, boolean isPlaying) throws Exception {
@@ -49,12 +48,6 @@ public class GameState extends ClientState implements Observer {
         this.ui = new UIWrapper("[" + username + "] " +
             (boardFlipped ? "BLACK" : "WHITE"), boardFlipped);
         log("sucessfully joined", UIWrapper.GREEN);
-        // TODO: thread host/port values into constructor
-        ws = new WebsocketClient("localhost", 8080);
-        ws.subscribe(this);
-        var connect = new UserGameCommand(UserGameCommand.CommandType.CONNECT,
-            authToken, gameID);
-        ws.send(connect);
     }
 
     private interface Message {
@@ -67,14 +60,12 @@ public class GameState extends ClientState implements Observer {
             return null;
         }
     );
-    public void message(String message) throws Exception {
+    public UserGameCommand message(String message) throws Exception {
         var serverMessage = new Gson().fromJson(message, ServerMessage.class);
-        var response = messages.get(serverMessage.getServerMessageType()).
-            call(serverMessage);
-        if (response != null) {
-            ws.send(response);
-        }
+        var response = messages.get(serverMessage.getServerMessageType())
+            .call(serverMessage);
         redraw();
+        return response;
     }
 
     public ClientState help(String[] args, ServerFacade facade) {
@@ -99,7 +90,7 @@ public class GameState extends ClientState implements Observer {
 
     public ClientState redraw(String[] args, ServerFacade facade) {
         highlightPos = null;
-        redraw();        
+        redraw();
         return this;
     }
 
