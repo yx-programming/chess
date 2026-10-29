@@ -27,25 +27,34 @@ public class UIWrapper {
     public static String YELLOW = EscapeSequences.SET_TEXT_COLOR_YELLOW;
     public static String BLUE = EscapeSequences.SET_TEXT_COLOR_BLUE;
     public void log(String message, String color) {
+        // add the color and reset the color afterwards
+        // we do it out here to not affect lines being split
+        message = color + message + EscapeSequences.RESET_TEXT_COLOR;
         // split the message into equal sized lines (70 lets us do anything in
         // 80 char width without issue (copied from SO, but I didn't feel like
-        // writing a custom solution
-        var lines = message.split("(?<=\\G.{70})");
+        // writing a custom solution (I ended up having to modify the regex
+        // anyways, haha 
+        var lines = message.split("(?<=\\G\\P{Cc}{70})");
         for (var line : lines) {
             // spaces add pading for the ui to look a bit nicer
-            log.add(color + line + EscapeSequences.RESET_TEXT_COLOR);
+            log.add(line);
         }
-        redraw();
     }
 
     public void clear() {
         log.clear();
-        redraw();
+    }
+
+    public void setBoard(ChessBoard board) {
+        this.board = board;
+    }
+
+    public ChessBoard getBoard() {
+        return board;
     }
 
     private Map<ChessPiece.PieceType, Character> pieceChars = Map.of(
-        ChessPiece.PieceType.PAWN, 'P',
-        ChessPiece.PieceType.KING, 'K',
+        ChessPiece.PieceType.PAWN, 'P', ChessPiece.PieceType.KING, 'K',
         ChessPiece.PieceType.QUEEN, 'Q',
         ChessPiece.PieceType.ROOK, 'R',
         ChessPiece.PieceType.BISHOP, 'B',
@@ -67,13 +76,13 @@ public class UIWrapper {
             System.out.println(EscapeSequences.SET_BG_COLOR_LIGHT_GREY + 
             EscapeSequences.SET_TEXT_COLOR_BLACK + " abcdefgh " +
             EscapeSequences.RESET_TEXT_COLOR + EscapeSequences.RESET_BG_COLOR);
+        var highlightPositions = getHighlightedSquares(highlightPos);
         for (int i = 0; i < ChessBoard.BOARD_SIZE; i++) {
             int row = boardFlipped ? i : (7 - i);
             System.out.print(EscapeSequences.SET_BG_COLOR_LIGHT_GREY + 
                 EscapeSequences.SET_TEXT_COLOR_BLACK + rows[row]);
             System.out.print(EscapeSequences.RESET_TEXT_COLOR +
                 EscapeSequences.RESET_BG_COLOR);
-            var highlightPositions = getHighlightedSquares(highlightPos);
             for (int j = 0; j < ChessBoard.BOARD_SIZE; j++) {
                 var pos = new ChessPosition(row + 1, j + 1);
                 var color = (i + j + (boardFlipped ? 1 : 0)) %
@@ -120,11 +129,12 @@ public class UIWrapper {
     }
 
     private void printLog() {
-        int lowerBound = log.size() < ChessBoard.BOARD_SIZE ? 0 :
-            log.size() - ChessBoard.BOARD_SIZE;
-        for (int i = lowerBound; i < log.size(); i++) {
+        int maxLines = ChessBoard.BOARD_SIZE + 2;
+        int lowerBound = log.size() < maxLines ? 0 : log.size() - maxLines;
+        int upperBound = log.size() < maxLines ? log.size() : maxLines;
+        for (int i = 0; i < upperBound; i++) {
             System.out.print(EscapeSequences.moveCursorToLocation(12, 2 + i) + 
-                log.get(i));
+                log.get(i + lowerBound));
         }
         // reset state for prompts
         System.out.print(EscapeSequences.moveCursorToLocation(0, 12));

@@ -15,16 +15,12 @@ public class PreLoginState extends ClientState {
         this.ui = new UIWrapper("[logged out]");
     }
 
-    public String prompt() {
-        return "[logged out]";
-    }
-
     public ClientState help(String[] args, ServerFacade facade) {
         log("help - list currently valid commands", UIWrapper.BLUE);
         log("quit - exit the application", UIWrapper.BLUE);
         log("login <USERNAME> <PASSWORD> - login to the server",
             UIWrapper.BLUE);
-        log("register <USERNAME> <PASSWORD> <EMAIL> - register an account",
+        log("register <username> <password> <email> - register an account",
             UIWrapper.BLUE);
         return this;
     }

@@ -14,22 +14,20 @@ import com.google.gson.*;
 import jakarta.websocket.*;
 
 public class GameState extends ClientState implements Observer {
-    private boolean blackPerspective;
-    private ChessBoard board;
+    private boolean boardFlipped;
     private String username;
     private String authToken;
     private boolean isPlaying;
     private int gameID;
-    private Collection<ChessPosition> highlightPositions;
+    private ChessPosition highlightPos;
     private WebsocketClient ws;
 
-    public GameState(boolean blackPerspective, String username,
+    public GameState(boolean boardFlipped, String username,
             String authToken, int gameID, boolean isPlaying) throws Exception {
-        this.blackPerspective = blackPerspective;
+        this.boardFlipped = boardFlipped;
         this.gameID = gameID;
         this.isPlaying = isPlaying;
-        board = new ChessBoard();
-        board.resetBoard();
+        highlightPos = null;
         if (isPlaying) {
             commands = Map.of(
                 "help", this::help,
@@ -48,7 +46,9 @@ public class GameState extends ClientState implements Observer {
         }
         this.username = username;
         this.authToken = authToken;
-        highlightPositions = new HashSet();
+        this.ui = new UIWrapper("[" + username + "] " +
+            (boardFlipped ? "BLACK" : "WHITE"), boardFlipped);
+        log("sucessfully joined", UIWrapper.GREEN);
         // TODO: thread host/port values into constructor
         ws = new WebsocketClient("localhost", 8080);
         ws.subscribe(this);
@@ -62,8 +62,8 @@ public class GameState extends ClientState implements Observer {
     }
     private Map<ServerMessage.ServerMessageType, Message> messages = Map.of(
         ServerMessage.ServerMessageType.LOAD_GAME, message -> {
-            board = ChessGame.fromSerialized(message.getData()).getBoard();
-            redraw();
+            ui.setBoard(
+                ChessGame.fromSerialized(message.getData()).getBoard());
             return null;
         }
     );
@@ -75,32 +75,37 @@ public class GameState extends ClientState implements Observer {
             ws.send(response);
         }
         redraw();
-        System.out.print(prompt() + "> ");
     }
 
     public ClientState help(String[] args, ServerFacade facade) {
-        System.out.println(EscapeSequences.moveCursorToLocation(0, 0));
-        System.out.print(EscapeSequences.SET_TEXT_COLOR_BLUE);
-        System.out.println("help - list currently valid commands");
-        System.out.println("redraw - redraw the board");
-        System.out.println("quit - leave the game");
+        log("help - list currently valid commands", UIWrapper.BLUE);
+        log("redraw - redraw the board", UIWrapper.BLUE);
+        log("quit - leave the game", UIWrapper.BLUE);
         if (isPlaying) {
-            System.out.println("move <start> <end> - move your piece (algebraic notation");
-            System.out.println("resign - forfeit the match");
-            System.out.println("highlight <position> - show valid moves for the piece at <position>");
+            log("move <start> <end> - move your piece (algebraic notation",
+                UIWrapper.BLUE);
+            log("resign - forfeit the match", UIWrapper.BLUE);
+            log("highlight <position> - show moves from <position>",
+                UIWrapper.BLUE);
         }
-        System.out.print(EscapeSequences.RESET_TEXT_COLOR);
+        log(EscapeSequences.RESET_TEXT_COLOR, UIWrapper.BLUE);
         return this;
     }
 
     public ClientState quit(String[] args, ServerFacade facade) {
-        System.out.println("leaving game");
+        log("leaving game", UIWrapper.BLUE);
         return new PostLoginState(username, authToken);
     }
 
     public ClientState redraw(String[] args, ServerFacade facade) {
-        redraw();
+        highlightPos = null;
+        redraw();        
         return this;
+    }
+
+    @Override
+    public void redraw() {
+        highlight(highlightPos);
     }
 
     public ClientState move(String[] args, ServerFacade facade)
@@ -122,84 +127,15 @@ public class GameState extends ClientState implements Observer {
             throw new Exception("expected one board position [ex: e4]");
         }
         var pos = ChessPosition.fromAlgebraic(args[0]);
-        var piece = board.getPiece(pos);
+        var piece = ui.getBoard().getPiece(pos);
         if (piece == null) {
             throw new Exception("no piece at " + args[0]);
         }
         if ((piece.getTeamColor() == ChessGame.TeamColor.BLACK) !=
-                blackPerspective) {
+                boardFlipped) {
             throw new Exception("that's not your piece");
         }
-        var moves = piece.pieceMoves(board, pos);
-        highlightPositions.add(pos);
-        for (var move : moves) {
-            highlightPositions.add(move.getEndPosition());
-        }
-        redraw();
-        highlightPositions.clear();
+        highlightPos = pos;
         return this;
-    }
-
-    private String boardString(ChessBoard board) {
-        var sb = new StringBuilder();
-        String lightColor = EscapeSequences.UNICODE_ESCAPE + "[48;5;136m";
-        String darkColor = EscapeSequences.UNICODE_ESCAPE + "[48;5;130m";
-        String hiLightColor = EscapeSequences.UNICODE_ESCAPE + "[48;5;99m";
-        String hiDarkColor = EscapeSequences.UNICODE_ESCAPE + "[48;5;98m";
-        String[] colors = {lightColor, darkColor, hiLightColor, hiDarkColor};
-        char[] rows = {'1', '2', '3', '4', '5', '6', '7', '8' };
-        Map<ChessPiece.PieceType, Character> repr = Map.of(
-            ChessPiece.PieceType.PAWN, 'P',
-            ChessPiece.PieceType.KING, 'K',
-            ChessPiece.PieceType.QUEEN, 'Q',
-            ChessPiece.PieceType.ROOK, 'R',
-            ChessPiece.PieceType.BISHOP, 'B',
-            ChessPiece.PieceType.KNIGHT, 'N'
-        );
-        sb.append(EscapeSequences.ERASE_LINE +
-            EscapeSequences.SET_BG_COLOR_LIGHT_GREY + 
-            EscapeSequences.SET_TEXT_COLOR_BLACK + " abcdefgh \n");
-        sb.append(EscapeSequences.RESET_TEXT_COLOR +
-            EscapeSequences.RESET_BG_COLOR);
-        for (int i = 0; i < 8; i++) {
-            sb.append(EscapeSequences.ERASE_LINE);
-            int row = blackPerspective ? i : (7 - i);
-            sb.append(EscapeSequences.ERASE_LINE +
-                EscapeSequences.SET_BG_COLOR_LIGHT_GREY + 
-                EscapeSequences.SET_TEXT_COLOR_BLACK + rows[row]);
-            sb.append(EscapeSequences.RESET_TEXT_COLOR +
-                EscapeSequences.RESET_BG_COLOR);
-            for (int j = 0; j < 8; j++) {
-                var color = (blackPerspective ? (i + j + 1) : (i + j)) %
-                    (colors.length / 2);
-                var pos = new ChessPosition(row + 1, j + 1);
-                if (highlightPositions.contains(pos)) {
-                    color += 2;
-                }
-                var piece = board.getPiece(pos);
-                char c = (piece == null) ? ' ' :
-                    repr.get(piece.getPieceType());
-                var pieceColor = (piece == null) ? "" :
-                    piece.getTeamColor() == ChessGame.TeamColor.WHITE ?
-                    EscapeSequences.SET_TEXT_COLOR_WHITE : 
-                    EscapeSequences.SET_TEXT_COLOR_BLACK;
-                sb.append(colors[color] + pieceColor + c);
-            }
-            sb.append(EscapeSequences.SET_BG_COLOR_LIGHT_GREY + 
-                EscapeSequences.SET_TEXT_COLOR_BLACK + rows[row]);
-            sb.append(EscapeSequences.RESET_TEXT_COLOR +
-                EscapeSequences.RESET_BG_COLOR);
-            sb.append('\n');
-        }
-        sb.append(EscapeSequences.ERASE_LINE +
-            EscapeSequences.SET_BG_COLOR_LIGHT_GREY + 
-            EscapeSequences.SET_TEXT_COLOR_BLACK + " abcdefgh ");
-        sb.append(EscapeSequences.RESET_TEXT_COLOR +
-            EscapeSequences.RESET_BG_COLOR);
-        return sb.toString();
-    }
-
-    public String prompt() {
-        return "[" + username + "]";
     }
 }

@@ -22,20 +22,16 @@ public class PostLoginState extends ClientState {
             "join", this::joinGame,
             "watch", this::watchGame
         );
-    }
-
-    public String prompt() {
-        return "[" + username + "]";
+        this.ui = new UIWrapper("[" + username + "]");
+        log("you are now logged in", UIWrapper.GREEN);
     }
 
     private ClientState help(String[] args, ServerFacade facade) {
-        System.out.print(EscapeSequences.SET_TEXT_COLOR_BLUE);
-        System.out.println("help - list currently valid commands");
-        System.out.println("logout - logout of the current session");
-        System.out.println("list - list all games");
-        System.out.println("join <ID> [WHITE|BLACK] - join a game");
-        System.out.println("watch <ID> - watch a game");
-        System.out.print(EscapeSequences.RESET_TEXT_COLOR);
+        log("help - list currently valid commands", UIWrapper.BLUE);
+        log("logout - logout of the current session", UIWrapper.BLUE);
+        log("list - list all games", UIWrapper.BLUE);
+        log("join <ID> [WHITE|BLACK] - join a game", UIWrapper.BLUE);
+        log("watch <ID> - watch a game", UIWrapper.BLUE);
         return this;
     }
 
@@ -59,40 +55,35 @@ public class PostLoginState extends ClientState {
             throws Exception {
         games = facade.listGames(authToken);
         if (games.size() > 0) {
-            System.out.println("GAMES:");
+            log("GAMES:", UIWrapper.WHITE);
         } else {
-            System.out.println("no games are currently live");
+            log("no games are currently live", UIWrapper.WHITE);
         }
         int i = 1;
         for (var game : games) {
-            System.out.print("\t" + i + ". " + game.gameName() + " - ");
+            String gameInfo = " " + i + ". " + game.gameName() + " - WHITE: ";
             if (game.whiteUsername() == null) {
-                System.out.print("WHITE: " +
-                    EscapeSequences.SET_TEXT_COLOR_GREEN + "Available, ");
+                gameInfo += EscapeSequences.SET_TEXT_COLOR_GREEN +
+                    "Available, ";
             } else if (game.whiteUsername().equals(username)) {
-                System.out.print("WHITE: " +
-                    EscapeSequences.SET_TEXT_COLOR_YELLOW + "Available (" +
-                    game.whiteUsername() + "), ");
+                gameInfo += EscapeSequences.SET_TEXT_COLOR_YELLOW +
+                    "Available (" + game.whiteUsername() + "), ";
             } else {
-                System.out.print("WHITE: " +
-                    EscapeSequences.SET_TEXT_COLOR_RED + "Unavailable (" +
-                    game.whiteUsername() + "), ");
+                gameInfo += EscapeSequences.SET_TEXT_COLOR_RED +
+                    "Unavailable (" + game.whiteUsername() + "), ";
             }
-            System.out.print(EscapeSequences.RESET_TEXT_COLOR);
-
+            gameInfo += EscapeSequences.RESET_TEXT_COLOR + "BLACK: ";
             if (game.blackUsername() == null) {
-                System.out.println("BLACK: " +
-                    EscapeSequences.SET_TEXT_COLOR_GREEN + "Available");
+                gameInfo += EscapeSequences.SET_TEXT_COLOR_GREEN +
+                    "Available";
             } else if (game.blackUsername().equals(username)) {
-                System.out.println("BLACK: " +
-                    EscapeSequences.SET_TEXT_COLOR_YELLOW + "Available (" +
-                    game.blackUsername() + ")");
+                gameInfo += EscapeSequences.SET_TEXT_COLOR_YELLOW +
+                    "Available (" + game.blackUsername() + ")";
             } else {
-                System.out.println("BLACK: " +
-                    EscapeSequences.SET_TEXT_COLOR_RED + "Unavailable (" +
-                    game.blackUsername() + ")");
+                gameInfo += EscapeSequences.SET_TEXT_COLOR_RED +
+                    "Unavailable (" + game.blackUsername() + ")";
             }
-            System.out.print(EscapeSequences.RESET_TEXT_COLOR);
+            log(gameInfo, UIWrapper.WHITE);
             i++;
         }
         return this;

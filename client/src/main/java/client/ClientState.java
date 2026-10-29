@@ -13,7 +13,7 @@ public abstract class ClientState {
     
     protected Map<String, Command>commands = Map.of();
     protected UIWrapper ui;
-    public abstract String prompt();
+
     public ClientState action(String commandName, String[] commandArgs,
             ServerFacade facade) throws Exception {
         var command = commands.get(commandName);
