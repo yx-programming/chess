@@ -65,6 +65,7 @@ public class GameState extends ClientState implements Observer {
         var response = messages.get(serverMessage.getServerMessageType())
             .call(serverMessage);
         redraw();
+        System.out.print("> ");
         return response;
     }
 

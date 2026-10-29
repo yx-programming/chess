@@ -23,7 +23,7 @@ public class ClientMain {
             try {
                 state.redraw();
                 System.out.print("> ");
-                String commandLine = scan.nextLine().toLowerCase();
+                String commandLine = scan.nextLine();
                 String[] commandWithArgs = commandLine.split(" ");
                 if (commandWithArgs.length == 0) {
                     throw new Exception("please input a command");
