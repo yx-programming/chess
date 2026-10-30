@@ -21,11 +21,11 @@ public class UIWrapper {
         this(title, false);
     }
 
-    public static final String WHITE = EscapeSequences.SET_TEXT_COLOR_WHITE;
-    public static final String GREEN = EscapeSequences.SET_TEXT_COLOR_GREEN;
-    public static final String RED = EscapeSequences.SET_TEXT_COLOR_RED;
-    public static final String YELLOW = EscapeSequences.SET_TEXT_COLOR_YELLOW;
-    public static final String BLUE = EscapeSequences.SET_TEXT_COLOR_BLUE;
+    public static String WHITE = EscapeSequences.SET_TEXT_COLOR_WHITE;
+    public static String GREEN = EscapeSequences.SET_TEXT_COLOR_GREEN;
+    public static String RED = EscapeSequences.SET_TEXT_COLOR_RED;
+    public static String YELLOW = EscapeSequences.SET_TEXT_COLOR_YELLOW;
+    public static String BLUE = EscapeSequences.SET_TEXT_COLOR_BLUE;
     public void log(String message, String color) {
         // add the color and reset the color afterwards
         // we do it out here to not affect lines being split

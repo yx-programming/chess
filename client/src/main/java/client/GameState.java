@@ -114,7 +114,6 @@ public class GameState extends ClientState implements Observer {
             authToken, gameID);
         message.addData(username);
         facade.sendWS(message);
-        facade.unsubscribe(this);
         return previous;
     }
 
