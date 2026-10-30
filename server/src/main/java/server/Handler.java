@@ -21,7 +21,10 @@ public class Handler {
     private UserService userService;
     private AuthService authService;
     private GameService gameService;
-    
+
+    private Map<String, WsMessageContext> authToContext = new HashMap<>();
+    private boolean done = false;
+
     public Handler() {
         try {
             userService = new UserService();
@@ -166,25 +169,119 @@ public class Handler {
     }
 
     private interface Command {
-        public ServerMessage call(UserGameCommand command) throws Exception;
+        public void call(WsMessageContext context, UserGameCommand command)
+            throws Exception;
     }
-    private Map<UserGameCommand.CommandType, Command> commands = Map.of(
-        UserGameCommand.CommandType.CONNECT, command -> {
-            authService.getAuthFromToken(command.getAuthToken());
-            var game = gameService.getGame(command.getGameID()).getGame();
+    private void connect(WsMessageContext context, UserGameCommand command)
+            throws Exception {
+        authService.getAuthFromToken(command.getAuthToken());
+        var gameInfo = gameService.getGame(command.getGameID());
+        var game = gameInfo.getGame();
+        var name = command.getData();
+        authToContext.put(command.getAuthToken(), context);
+        var message = new ServerMessage(
+            ServerMessage.ServerMessageType.LOAD_GAME);
+        message.addData(game.serialize());
+        send(message, context);
+        message = new ServerMessage(
+            ServerMessage.ServerMessageType.NOTIFICATION);
+        message.addData(name + " has joined");
+        if (gameInfo.getWhiteUser().equals(name)) {
+            message.addData(" as white");
+        } else if (gameInfo.getBlackUser().equals(name)) {
+            message.addData(" as black");
+        }
+        sendToAll(message);
+    }
+
+    private void makeMove(WsMessageContext context, UserGameCommand command)
+            throws Exception {
+        authService.getAuthFromToken(command.getAuthToken());
+        if (done) {
             var message = new ServerMessage(
+                ServerMessage.ServerMessageType.ERROR);
+            message.addData("the game has ended");
+            send(message, context);
+            return;
+        }
+        var gameInfo = gameService.getGame(command.getGameID());
+        var game = gameInfo.getGame();
+        ChessMove move = new Gson().fromJson(command.getData(),
+            ChessMove.class);
+        try {
+            var color = game.getBoard().getPiece(move.getStartPosition())
+                .getTeamColor();
+            game.makeMove(move);
+            gameInfo.setGame(game);
+            var name = color == ChessGame.TeamColor.WHITE ?
+                gameInfo.getWhiteUser() : gameInfo.getBlackUser();
+            var otherColor = color == ChessGame.TeamColor.WHITE ?
+                ChessGame.TeamColor.BLACK : ChessGame.TeamColor.WHITE ;
+            var otherName = otherColor == ChessGame.TeamColor.WHITE ?
+                gameInfo.getWhiteUser() : gameInfo.getBlackUser();
+            var message = new ServerMessage(
+                ServerMessage.ServerMessageType.NOTIFICATION);
+            message.addData(name + " made a move (" + move + ")");
+            sendToAll(message);
+            if (game.isInCheckmate(otherColor)) {
+                message = new ServerMessage(
+                    ServerMessage.ServerMessageType.NOTIFICATION);
+                message.addData(otherName + " is in checkmate, " + name +
+                    " wins!");
+                sendToAll(message);
+                done = true;
+            } else if (game.isInCheck(otherColor)) {
+                message = new ServerMessage(
+                    ServerMessage.ServerMessageType.NOTIFICATION);
+                message.addData(otherName + " is in check");
+                sendToAll(message);
+            }
+            
+            if (done) {
+                gameService.deleteGame(gameInfo);
+            } else {
+                gameService.updateGame(gameInfo);
+            }
+            message = new ServerMessage(
                 ServerMessage.ServerMessageType.LOAD_GAME);
             message.addData(game.serialize());
-            return message;
+            sendToAll(message);
+        } catch (Exception e) {
+            var message = new ServerMessage(
+                ServerMessage.ServerMessageType.ERROR);
+            message.addData(e.getMessage());
+            send(message, context);
         }
+    }
+
+    private void leave(WsMessageContext context, UserGameCommand command)
+            throws Exception {
+    
+    }
+
+    private void resign(WsMessageContext context, UserGameCommand command)
+            throws Exception {
+    
+    }
+    
+    private Map<UserGameCommand.CommandType, Command> commands = Map.of(
+        UserGameCommand.CommandType.CONNECT, this::connect,
+        UserGameCommand.CommandType.MAKE_MOVE, this::makeMove
     );
     public void wsMessage(WsMessageContext context) throws Exception {
         var command = new Gson().fromJson(context.message(),
             UserGameCommand.class);
-        var response = commands.get(command.getCommandType()).call(command);
-        if (response != null) {
-            var jsonString = new Gson().toJson(response);
-            context.send(jsonString);
+        commands.get(command.getCommandType()).call(context, command);
+    }
+
+    private void sendToAll(ServerMessage message) {
+        for (var context : authToContext.values()) {
+            send(message, context);
         }
+    }
+
+    private void send(ServerMessage message, WsMessageContext context) {
+        var messageString = new Gson().toJson(message);
+        context.send(messageString);
     }
 }

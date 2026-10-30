@@ -30,6 +30,14 @@ public class GameService {
         return game.getGame(id);
     }
 
+    public void updateGame(GameInfo game) throws DataAccessException {
+        this.game.updateGame(game);
+    }
+
+    public void deleteGame(GameInfo game) throws DataAccessException {
+        this.game.deleteGame(game);
+    }
+
     public void clear() throws DataAccessException {
         game.clear();
     }

@@ -38,7 +38,7 @@ public class PreLoginState extends ClientState {
         var username = args[0];
         var password = args[1];
         var authToken = facade.login(username, password);
-        return new PostLoginState(username, authToken);
+        return new PostLoginState(username, authToken, this);
     }
 
     public ClientState register(String[] args, ServerFacade facade)
@@ -50,6 +50,6 @@ public class PreLoginState extends ClientState {
         var password = args[1];
         var email = args[2];
         var authToken = facade.register(username, password, email);
-        return new PostLoginState(username, authToken);
+        return new PostLoginState(username, authToken, this);
     }
 }

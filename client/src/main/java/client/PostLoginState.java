@@ -12,7 +12,8 @@ public class PostLoginState extends ClientState {
 
     private List<ServerFacade.GameInfo> games;
     
-    public PostLoginState(String username, String authToken) {
+    public PostLoginState(String username, String authToken,
+            ClientState previous) {
         this.username = username;
         this.authToken = authToken;
         commands = Map.of(
@@ -24,6 +25,7 @@ public class PostLoginState extends ClientState {
             "watch", this::watchGame
         );
         this.ui = new UIWrapper("[" + username + "]");
+        this.previous = previous;
         log("you are now logged in", UIWrapper.GREEN);
     }
 
@@ -39,7 +41,8 @@ public class PostLoginState extends ClientState {
     private ClientState logout(String[] args, ServerFacade facade)
             throws Exception{
         facade.logout(authToken);
-        return new PreLoginState();
+        previous.log("logged out", UIWrapper.YELLOW);
+        return previous;
     }
 
     private ClientState createGame(String[] args, ServerFacade facade)
@@ -129,19 +132,13 @@ public class PostLoginState extends ClientState {
             if (game.whiteUsername() == null ||
                     game.whiteUsername().equals(username)) {
                 color = ChessGame.TeamColor.WHITE;
-            } else if (game.whiteUsername() == null ||
-                    game.whiteUsername().equals(username)) {
+            } else if (game.blackUsername() == null ||
+                    game.blackUsername().equals(username)) {
+                color = ChessGame.TeamColor.BLACK;
             }
         }
         facade.joinGame(authToken, color, game.gameID());
-        facade.connectWS();
-        var state = new GameState(color == ChessGame.TeamColor.BLACK, username,
-            authToken, game.gameID(), true);
-        var command = new UserGameCommand(UserGameCommand.CommandType.CONNECT,
-            authToken, game.gameID());
-        facade.sendWS(command);
-        facade.registerObserver(state);
-        return state;
+        return wsConnect(facade, true, color, game);
     }
 
     private ClientState watchGame(String[] args, ServerFacade facade)
@@ -150,9 +147,23 @@ public class PostLoginState extends ClientState {
             throw new Exception("expected a game ID (check the game list)");
         }
         int gameID = validateGameID(args[0]);
-        if (games.get(gameID) == null) {
+        var game = games.get(gameID);
+        if (game == null) {
             throw new Exception("game not listed");
         }
-        return new GameState(false, username, authToken, gameID, false);
+        return wsConnect(facade, false, null, game);
+    }
+    private ClientState wsConnect(ServerFacade facade, boolean playing,
+            ChessGame.TeamColor color, ServerFacade.GameInfo game)
+            throws Exception {
+        facade.connectWS();
+        var state = new GameState(color == ChessGame.TeamColor.BLACK, username,
+            authToken, game.gameID(), playing, this);
+        var command = new UserGameCommand(UserGameCommand.CommandType.CONNECT,
+            authToken, game.gameID());
+        command.addData(username);
+        facade.sendWS(command);
+        facade.registerObserver(state);
+        return state;
     }
 }

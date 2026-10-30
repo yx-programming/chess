@@ -36,7 +36,13 @@ public class ClientMain {
 
                 state = state.action(command, commandArgs, facade);
             } catch (Exception e) {
-                state.log("error: " + e.getMessage(), UIWrapper.RED);
+                var message = e.getMessage().toLowerCase();
+                // strip out extraneous error:
+                if (message.contains("error: ")) {
+                    state.log(message, UIWrapper.RED);
+                } else {
+                    state.log("error: " + message, UIWrapper.RED);
+                }
             }
         } while (state != null);
     }

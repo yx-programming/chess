@@ -1,5 +1,7 @@
 package client;
 
+import ui.*;
+
 import jakarta.websocket.*;
 import java.io.*;
 import java.net.*;
@@ -36,7 +38,11 @@ public class WebsocketClient extends Endpoint implements
                     send(command);
                 }
             } catch (Exception e) {
-                System.out.println(e.getMessage());
+                if (observer instanceof ClientState) {
+                    var cs = (ClientState)observer;
+                    cs.log(e.getMessage(), UIWrapper.RED);
+                    cs.redraw();
+                }
             }
         }
     }

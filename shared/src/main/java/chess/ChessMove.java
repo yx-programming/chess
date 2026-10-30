@@ -37,7 +37,8 @@ public class ChessMove {
     }
     // debugging helper
     @Override public String toString() {
-        return this.start + " -> " + this.end + " (" + this.promotion + ")";
+        return this.start + " -> " + this.end + (this.promotion != null ? 
+            " (" + this.promotion + ")" : "");
     }
 
     /**

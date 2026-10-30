@@ -77,11 +77,20 @@ public class SQLGameDAO implements GameDAO {
 
     public void updateGame(GameInfo game) throws DataAccessException {
         var statementString = """
-            update games set whiteUser=?, blackUser=? where id=?""";
+            update games set whiteUser=?, blackUser=?, game=? where id=?""";
         SQLCommand.execute(statementString, statement -> {
             statement.setString(1, game.getWhiteUser());
             statement.setString(2, game.getBlackUser());
-            statement.setInt(3, game.getID());
+            statement.setString(3, game.getGame().serialize());
+            statement.setInt(4, game.getID());
+            return statement.executeUpdate();
+        });
+    }
+
+    public void deleteGame(GameInfo game) throws DataAccessException {
+        var statementString = "delete from games where id=?";
+        SQLCommand.execute(statementString, statement -> {
+            statement.setInt(1, game.getID());
             return statement.executeUpdate();
         });
     }

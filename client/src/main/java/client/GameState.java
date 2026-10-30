@@ -21,8 +21,9 @@ public class GameState extends ClientState implements Observer {
     private int gameID;
     private ChessPosition highlightPos;
 
-    public GameState(boolean boardFlipped, String username,
-            String authToken, int gameID, boolean isPlaying) throws Exception {
+    public GameState(boolean boardFlipped, String username, String authToken,
+            int gameID, boolean isPlaying, ClientState previous)
+            throws Exception {
         this.boardFlipped = boardFlipped;
         this.gameID = gameID;
         this.isPlaying = isPlaying;
@@ -45,6 +46,7 @@ public class GameState extends ClientState implements Observer {
         }
         this.username = username;
         this.authToken = authToken;
+        this.previous = previous;
         this.ui = new UIWrapper("[" + username + "] " +
             (boardFlipped ? "BLACK" : "WHITE"), boardFlipped);
         log("sucessfully joined", UIWrapper.GREEN);
@@ -57,6 +59,21 @@ public class GameState extends ClientState implements Observer {
         ServerMessage.ServerMessageType.LOAD_GAME, message -> {
             ui.setBoard(
                 ChessGame.fromSerialized(message.getData()).getBoard());
+            return null;
+        },
+        ServerMessage.ServerMessageType.ERROR, message -> {
+            var error = message.getData().toLowerCase();
+            if (error.contains("error: ")) {
+                log(message.getData(), UIWrapper.RED);
+            } else {
+                log("error: " + message.getData(), UIWrapper.RED);
+            }
+            redraw();
+            return null;
+        },
+        ServerMessage.ServerMessageType.NOTIFICATION, message -> {
+            log(message.getData(), UIWrapper.YELLOW);
+            redraw();
             return null;
         }
     );
@@ -85,8 +102,8 @@ public class GameState extends ClientState implements Observer {
     }
 
     public ClientState quit(String[] args, ServerFacade facade) {
-        log("leaving game", UIWrapper.BLUE);
-        return new PostLoginState(username, authToken);
+        previous.log("left game", UIWrapper.YELLOW);
+        return previous;
     }
 
     public ClientState redraw(String[] args, ServerFacade facade) {
@@ -100,11 +117,46 @@ public class GameState extends ClientState implements Observer {
         highlight(highlightPos);
     }
 
+    private Map<Character, ChessPiece.PieceType> pieceMap = Map.of(
+        'q', ChessPiece.PieceType.QUEEN,
+        'r', ChessPiece.PieceType.ROOK,
+        'b', ChessPiece.PieceType.BISHOP,
+        'n', ChessPiece.PieceType.KNIGHT
+    );
     public ClientState move(String[] args, ServerFacade facade)
             throws Exception {
-        if (args.length != 2) {
-            throw new Exception("expected two board positions (start and end)");
+        if (args.length < 2 || args.length > 3) {
+            throw new Exception(
+                "expected two board positions (start and end), and an " +
+                "optional promotion piece");
         }
+        var start = ChessPosition.fromAlgebraic(args[0]);
+        var end = ChessPosition.fromAlgebraic(args[1]);
+        var piece = ui.getBoard().getPiece(start);
+        if (piece == null) {
+            throw new Exception("no piece there");
+        }
+        if (piece.getTeamColor() != (boardFlipped ? ChessGame.TeamColor.BLACK :
+                ChessGame.TeamColor.WHITE)) {
+            throw new Exception("not your piece");
+        }
+        ChessPiece.PieceType promotion = null;
+        if (args.length == 3) {
+            if (piece.getPieceType() != ChessPiece.PieceType.PAWN) {
+                throw new Exception("can only promote pawns");
+            }
+            var promotionChar = args[2].substring(0);
+            if (!"qrbn".contains(promotionChar)) {
+                throw new Exception("promotion must be a valid piece letter");
+            }
+            promotion = pieceMap.get(promotionChar);
+        }
+        var move = new ChessMove(start, end, promotion);
+        var json = new Gson().toJson(move);
+        var command = new UserGameCommand(UserGameCommand.CommandType.MAKE_MOVE,
+            authToken, gameID);
+        command.addData(json);
+        facade.sendWS(command);
         return this;
     }
 

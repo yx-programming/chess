@@ -35,7 +35,7 @@ public class ChessPosition {
 
     // debugging help
     @Override public String toString() {
-        return this.row + ", " + this.col;
+        return (char)(this.col + 'a' - 1) + "" + (char)(this.row + '0');
     }
 
     /**
@@ -60,6 +60,9 @@ public class ChessPosition {
     }
 
     public static ChessPosition fromAlgebraic(String arg) throws Exception {
+        if (arg.length() != 2) {
+            throw new Exception("must be in algebraic notation (e.g. e4)");
+        }
         int col = arg.charAt(0) - 'a' + 1;
         if (col < 1 || col > 8) {
             throw new Exception("file must be a-h");

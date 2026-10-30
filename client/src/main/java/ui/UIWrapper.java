@@ -13,7 +13,7 @@ public class UIWrapper {
     public UIWrapper(String title, boolean flipped) {
         this.title = title;
         log = new ArrayList<String>();
-        board = null;
+        board = new ChessBoard();
         boardFlipped = flipped;
     }
 
@@ -88,7 +88,7 @@ public class UIWrapper {
                 var color = (i + j + (boardFlipped ? 1 : 0)) %
                     (squares.length / 2) +
                     (highlightPositions.contains(pos) ? 2 : 0);
-                var piece = (board == null ? null : board.getPiece(pos));
+                var piece = board.getPiece(pos);
                 char c = (piece == null) ? ' ' :
                     pieceChars.get(piece.getPieceType());
                 var pieceColor = (piece == null) ? "" :
@@ -115,7 +115,7 @@ public class UIWrapper {
 
     private Collection<ChessPosition> getHighlightedSquares(ChessPosition pos) {
         var highlightPositions = new HashSet<ChessPosition>();
-        if (pos != null && board != null) {
+        if (pos != null) {
             var piece = board.getPiece(pos);
             if (piece != null) {
                 highlightPositions.add(pos);

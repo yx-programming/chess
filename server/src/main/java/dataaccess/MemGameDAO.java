@@ -32,6 +32,10 @@ public class MemGameDAO implements GameDAO {
         games.put(game.getID(), game);
     }
 
+    public void deleteGame(GameInfo game) {
+        games.remove(game.getID());
+    }
+
     public GameInfo joinGame(int id, ChessGame.TeamColor color, String username)
             throws DataAccessException {
         GameInfo gameInfo = games.get(id);

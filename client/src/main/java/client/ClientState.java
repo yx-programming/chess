@@ -13,6 +13,7 @@ public abstract class ClientState {
     
     protected Map<String, Command>commands = Map.of();
     protected UIWrapper ui;
+    protected ClientState previous;
 
     public ClientState action(String commandName, String[] commandArgs,
             ServerFacade facade) throws Exception {

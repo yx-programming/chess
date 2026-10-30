@@ -60,8 +60,7 @@ public class ChessBoard {
     public void addPiece(ChessPosition position, ChessPiece piece) {
         // shift back one because the positions are 1-8, not 0-7
         int col = position.getColumn() - 1;
-        // flip the row so that 1 goes on the bottom
-        int row = BOARD_SIZE - position.getRow();
+        int row = position.getRow() - 1;
         this.board[row][col] = piece;
         if (piece == null) {
             return;
@@ -109,7 +108,7 @@ public class ChessBoard {
      */
     public ChessPiece getPiece(ChessPosition position) {
         int col = position.getColumn() - 1;
-        int row = BOARD_SIZE - position.getRow();
+        int row = position.getRow() - 1;
         return isValid(position) ? this.board[row][col] : null;
     }
 
