@@ -51,10 +51,6 @@ public class WebsocketClient extends Endpoint implements
         observers.add(observer);
     }
 
-    public void unsubscribe(Observer observer) {
-        observers.remove(observer);
-    }
-
     public void send(UserGameCommand command) throws IOException {
         String message = new Gson().toJson(command);
         session.getBasicRemote().sendText(message);
