@@ -14,6 +14,7 @@ import service.*;
 import websocket.commands.*;
 import websocket.messages.*;
 
+import java.nio.channels.*;
 import java.util.*;
 import java.util.concurrent.*;
 
@@ -22,8 +23,7 @@ public class Handler {
     private AuthService authService;
     private GameService gameService;
 
-    private Map<String, WsMessageContext> authToContext = new HashMap<>();
-    private boolean done = false;
+    private Map<WsContext, Integer> contextToGameID = new HashMap<>();
 
     public Handler() {
         try {
@@ -168,123 +168,185 @@ public class Handler {
         }
     }
 
+    public void wsClose(WsContext context) {
+        contextToGameID.remove(context);
+    }
+
     private interface Command {
         public void call(WsMessageContext context, UserGameCommand command)
-            throws Exception;
+            throws ClosedChannelException, Exception;
     }
     private void connect(WsMessageContext context, UserGameCommand command)
-            throws Exception {
-        authService.getAuthFromToken(command.getAuthToken());
+            throws ClosedChannelException, Exception {
+        AuthData auth;
+        try {
+            auth = authService.getAuthFromToken(command.getAuthToken());
+        } catch (Exception e) {
+            var message = new ServerMessage(
+                ServerMessage.ServerMessageType.ERROR);
+            message.addDataErrorMessage("unauthorized");
+            send(message, context);
+            return;
+        }
+        var name = auth.username();
         var gameInfo = gameService.getGame(command.getGameID());
         var game = gameInfo.getGame();
-        var name = command.getData();
-        authToContext.put(command.getAuthToken(), context);
         var message = new ServerMessage(
             ServerMessage.ServerMessageType.LOAD_GAME);
-        message.addData(game.serialize());
+        message.addDataGame(game.serialize());
         send(message, context);
         message = new ServerMessage(
             ServerMessage.ServerMessageType.NOTIFICATION);
-        message.addData(name + " has joined");
+        message.addDataMessage(name + " has joined");
         if (name.equals(gameInfo.getWhiteUser())) {
-            message.addData(" as white");
+            message.addDataMessage(" as white");
         } else if (name.equals(gameInfo.getBlackUser())) {
-            message.addData(" as black");
+            message.addDataMessage(" as black");
         }
-        sendToAll(message);
+        sendToAllInGame(message, gameInfo.getID());
+        contextToGameID.put(context, gameInfo.getID());
+    }
+
+    private void unauthorized(WsContext context)
+            throws ClosedChannelException, Exception {
+        var message = new ServerMessage(
+            ServerMessage.ServerMessageType.ERROR);
+        message.addDataErrorMessage("unauthorized");
+        send(message, context);
     }
 
     private void makeMove(WsMessageContext context, UserGameCommand command)
-            throws Exception {
-        authService.getAuthFromToken(command.getAuthToken());
-        if (done) {
-            var message = new ServerMessage(
-                ServerMessage.ServerMessageType.ERROR);
-            message.addData("the game has ended");
-            send(message, context);
+            throws ClosedChannelException, Exception {
+        AuthData auth;
+        try {
+            auth = authService.getAuthFromToken(command.getAuthToken());
+        } catch (Exception e) {
+            unauthorized(context);
             return;
         }
         var gameInfo = gameService.getGame(command.getGameID());
         var game = gameInfo.getGame();
-        ChessMove move = new Gson().fromJson(command.getData(),
-            ChessMove.class);
+        var name = auth.username();
+        if (!(name.equals(gameInfo.getWhiteUser()) &&
+                game.getTeamTurn() == ChessGame.TeamColor.WHITE) &&
+                !(name.equals(gameInfo.getBlackUser()) &&
+                game.getTeamTurn() == ChessGame.TeamColor.BLACK)) {
+            unauthorized(context);
+            return;
+        }
+        if (game.isDone()) {
+            var message = new ServerMessage(
+                ServerMessage.ServerMessageType.ERROR);
+            message.addDataErrorMessage("the game has ended");
+            send(message, context);
+            return;
+        }
+        var move = command.getMove();
         try {
             var color = game.getBoard().getPiece(move.getStartPosition())
                 .getTeamColor();
             game.makeMove(move);
             gameInfo.setGame(game);
-            var name = color == ChessGame.TeamColor.WHITE ?
-                gameInfo.getWhiteUser() : gameInfo.getBlackUser();
             var otherColor = color == ChessGame.TeamColor.WHITE ?
                 ChessGame.TeamColor.BLACK : ChessGame.TeamColor.WHITE ;
             var otherName = otherColor == ChessGame.TeamColor.WHITE ?
                 gameInfo.getWhiteUser() : gameInfo.getBlackUser();
             var message = new ServerMessage(
                 ServerMessage.ServerMessageType.NOTIFICATION);
-            message.addData(name + " made a move (" + move + ")");
-            sendToAll(message);
+            message.addDataMessage(name + " made a move (" + move + ")");
+            sendToAllInGameExcept(message, gameInfo.getID(), context);
             if (game.isInCheckmate(otherColor)) {
                 message = new ServerMessage(
                     ServerMessage.ServerMessageType.NOTIFICATION);
-                message.addData(otherName + " is in checkmate, " + name +
+                message.addDataMessage(otherName + " is in checkmate, " + name +
                     " wins!");
-                sendToAll(message);
-                done = true;
+                sendToAllInGame(message, gameInfo.getID());
             } else if (game.isInCheck(otherColor)) {
                 message = new ServerMessage(
                     ServerMessage.ServerMessageType.NOTIFICATION);
-                message.addData(otherName + " is in check");
-                sendToAll(message);
+                message.addDataMessage(otherName + " is in check");
+                sendToAllInGame(message, gameInfo.getID());
             }
-            
-            if (done) {
-                message = new ServerMessage(
-                    ServerMessage.ServerMessageType.DONE);
-                sendToAll(message);
-                gameService.deleteGame(gameInfo);
-            } else {
-                gameService.updateGame(gameInfo);
-            }
+                        
+            gameService.updateGame(gameInfo);
             message = new ServerMessage(
                 ServerMessage.ServerMessageType.LOAD_GAME);
-            message.addData(game.serialize());
-            sendToAll(message);
+            message.addDataGame(game.serialize());
+            sendToAllInGame(message, gameInfo.getID());
+        } catch (ClosedChannelException e) {
+            
         } catch (Exception e) {
             var message = new ServerMessage(
                 ServerMessage.ServerMessageType.ERROR);
-            message.addData(e.getMessage());
+            message.addDataErrorMessage(e.getMessage());
             send(message, context);
         }
     }
 
     private void leave(WsMessageContext context, UserGameCommand command)
-            throws Exception {
-        authService.getAuthFromToken(command.getAuthToken());
+            throws ClosedChannelException, Exception {
+        AuthData auth;
+        try {
+            auth = authService.getAuthFromToken(command.getAuthToken());
+        } catch (Exception e) {
+            var message = new ServerMessage(
+                ServerMessage.ServerMessageType.ERROR);
+            message.addDataErrorMessage("unauthorized");
+            send(message, context);
+            return;
+        }
+        var username = auth.username();
         var message = new ServerMessage(
             ServerMessage.ServerMessageType.NOTIFICATION);
-        var username = command.getData();
-        authToContext.remove(command.getAuthToken());
+        contextToGameID.remove(context);
         context.closeSession();
-        message.addData(username + " left");
-        sendToAll(message);
+        message.addDataMessage(username + " left");
+        sendToAllInGame(message, command.getGameID());
+
+        var game = gameService.getGame(command.getGameID());
+        if (username.equals(game.getWhiteUser())) {
+            game.setWhiteUser(null);
+        } else if (username.equals(game.getBlackUser())) {
+            game.setBlackUser(null);
+        }
+        gameService.updateGame(game);
     }
 
     private void resign(WsMessageContext context, UserGameCommand command)
-            throws Exception {
-        authService.getAuthFromToken(command.getAuthToken());
-        var name = command.getData();
+            throws ClosedChannelException, Exception {
+        AuthData auth;
+        try {
+            auth = authService.getAuthFromToken(command.getAuthToken());
+        } catch (Exception e) {
+            var message = new ServerMessage(
+                ServerMessage.ServerMessageType.ERROR);
+            message.addDataErrorMessage("unauthorized");
+            send(message, context);
+            return;
+        }
         var game = gameService.getGame(command.getGameID());
+        var name = auth.username();
+        if (!name.equals(game.getWhiteUser()) &&
+                !name.equals(game.getBlackUser())) {
+            unauthorized(context);
+            return;
+        }
+        if (game.getGame().isDone()) {
+            var message = new ServerMessage(
+                ServerMessage.ServerMessageType.ERROR);
+            message.addDataErrorMessage("game is already over");
+            send(message, context);
+            return;
+        }
         var otherName = game.getWhiteUser().equals(name) ? game.getBlackUser() :
             game.getWhiteUser();
         var message = new ServerMessage(
             ServerMessage.ServerMessageType.NOTIFICATION);
-        message.addData(name + " resigned, " + otherName +
+        message.addDataMessage(name + " resigned, " + otherName +
             " wins!");
-        sendToAll(message);
-        gameService.deleteGame(game);
-        message = new ServerMessage(
-            ServerMessage.ServerMessageType.DONE);
-        sendToAll(message);
+        sendToAllInGame(message, command.getGameID());
+        game.getGame().finish();
+        gameService.updateGame(game);
     }
     
     private Map<UserGameCommand.CommandType, Command> commands = Map.of(
@@ -294,19 +356,44 @@ public class Handler {
         UserGameCommand.CommandType.RESIGN, this::resign
     );
     public void wsMessage(WsMessageContext context) throws Exception {
-        var command = new Gson().fromJson(context.message(),
-            UserGameCommand.class);
-        commands.get(command.getCommandType()).call(context, command);
-    }
-
-    private void sendToAll(ServerMessage message) {
-        for (var context : authToContext.values()) {
+        try {
+            var command = new Gson().fromJson(context.message(),
+                UserGameCommand.class);
+            commands.get(command.getCommandType()).call(context, command);
+        } catch (ClosedChannelException e) {
+            System.out.println("context was dropped, closing " + e.getMessage());
+            contextToGameID.remove(context);
+            return;
+        } catch (Exception e) {
+            var message = new ServerMessage(
+                ServerMessage.ServerMessageType.ERROR);
+            message.addDataErrorMessage(e.toString());
             send(message, context);
         }
     }
 
-    private void send(ServerMessage message, WsMessageContext context) {
+    private void sendToAllInGame(ServerMessage message, int id)
+            throws ClosedChannelException, Exception {
+        for (var otherContext : contextToGameID.keySet()) {
+            if (contextToGameID.get(otherContext) == id) {
+                send(message, otherContext);
+            }
+        }
+    }
+
+    private void sendToAllInGameExcept(ServerMessage message, int id,
+            WsContext exclude) throws ClosedChannelException, Exception {
+        for (var otherContext : contextToGameID.keySet()) {
+            if (contextToGameID.get(otherContext) == id &&
+                    !otherContext.equals(exclude)) {
+                send(message, otherContext);
+            }
+        }
+    }
+
+    private void send(ServerMessage message, WsContext context)
+            throws ClosedChannelException, Exception {
         var messageString = new Gson().toJson(message);
         context.send(messageString);
-    }
+        }
 }

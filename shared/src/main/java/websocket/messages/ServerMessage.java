@@ -11,25 +11,50 @@ import java.util.Objects;
 public class ServerMessage {
     ServerMessageType serverMessageType;
 
-    private String extraData = "";
+    private String game = null;
+    private String message = null;
+    private String errorMessage = null;
     
     public enum ServerMessageType {
         LOAD_GAME,
         ERROR,
         NOTIFICATION,
-        DONE
     }
 
     public ServerMessage(ServerMessageType type) {
         this.serverMessageType = type;
     }
 
-    public void addData(String s) {
-        extraData += s;
+    public void addDataGame(String s) {
+        if (game == null) {
+            game = "";
+        }
+        game += s;
+    }
+
+    public void addDataMessage(String s) {
+        if (message == null) {
+            message = "";
+        }
+        message += s;
+    }
+
+    public void addDataErrorMessage(String s) {
+        if (errorMessage == null) {
+            errorMessage = "";
+        }
+        errorMessage += s;
     }
 
     public String getData() {
-        return extraData;
+        if (game != null) {
+            return game;
+        } else if (message != null) {
+            return message;
+        } else if (errorMessage != null) {
+            return errorMessage;
+        }
+        return "";
     }
 
     public ServerMessageType getServerMessageType() {

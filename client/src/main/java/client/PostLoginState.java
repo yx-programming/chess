@@ -161,7 +161,6 @@ public class PostLoginState extends ClientState {
             authToken, game.gameID(), playing, this);
         var command = new UserGameCommand(UserGameCommand.CommandType.CONNECT,
             authToken, game.gameID());
-        command.addData(username);
         facade.sendWS(command);
         facade.registerObserver(state);
         return state;

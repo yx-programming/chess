@@ -27,7 +27,7 @@ public class Server {
         javalin.ws("/ws", ws -> {
             ws.onConnect(ctx -> ctx.enableAutomaticPings());
             ws.onMessage(handler::wsMessage);
-            ws.onClose(ctx -> {});
+            ws.onClose(handler::wsClose);
         });
     }
 

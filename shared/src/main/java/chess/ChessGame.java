@@ -16,11 +16,20 @@ import java.util.Objects;
 public class ChessGame {
     private TeamColor turn;
     private ChessBoard board;
+    private boolean done = false;
 
     public ChessGame() {
         turn = TeamColor.WHITE;
         board = new ChessBoard();
         board.resetBoard();
+    }
+
+    public void finish() {
+        done = true;
+    }
+
+    public boolean isDone() {
+        return done;
     }
 
     @Override
@@ -113,6 +122,9 @@ public class ChessGame {
      * @throws InvalidMoveException if move is invalid
      */
     public void makeMove(ChessMove move) throws InvalidMoveException {
+        if (done) {
+            throw new InvalidMoveException("game is over");
+        }
         if (move == null) {
             throw new InvalidMoveException("empty move");
         }
@@ -296,6 +308,7 @@ public class ChessGame {
 
     public String serialize() {
         var sb = new StringBuilder();
+        sb.append(done ? "D" : " ");
         sb.append(turn == TeamColor.WHITE ? 'W' : 'B');
         sb.append(board.toString());
         return sb.toString();
@@ -303,13 +316,16 @@ public class ChessGame {
 
     public static ChessGame fromSerialized(String serial) {
         ChessGame game = new ChessGame();
-        if (serial.charAt(0) == 'B') {
+        if (serial.charAt(0) == 'D') {
+            game.finish();
+        }
+        if (serial.charAt(1) == 'B') {
             game.setTeamTurn(TeamColor.BLACK);
         }
         for (int i = 0; i < ChessBoard.BOARD_SIZE; i++) {
             for (int j = 0; j < ChessBoard.BOARD_SIZE; j++) {
                 char pieceChar = serial.charAt(i * ChessBoard.BOARD_SIZE +
-                    j + 1);
+                    j + 2);
                 TeamColor team = Character.isUpperCase(pieceChar) ? 
                     TeamColor.WHITE : TeamColor.BLACK;
                 pieceChar = Character.toLowerCase(pieceChar);
