@@ -19,6 +19,7 @@ public class GameState extends ClientState implements Observer {
     private String authToken;
     private boolean isPlaying;
     private int gameID;
+    private boolean done = false;
     private ChessPosition highlightPos;
 
     public GameState(boolean boardFlipped, String username, String authToken,
@@ -48,7 +49,8 @@ public class GameState extends ClientState implements Observer {
         this.authToken = authToken;
         this.previous = previous;
         this.ui = new UIWrapper("[" + username + "] " +
-            (boardFlipped ? "BLACK" : "WHITE"), boardFlipped);
+            (isPlaying ? (boardFlipped ? "BLACK" : "WHITE") : ""),
+            boardFlipped);
         log("sucessfully joined", UIWrapper.GREEN);
     }
 
@@ -74,6 +76,10 @@ public class GameState extends ClientState implements Observer {
         ServerMessage.ServerMessageType.NOTIFICATION, message -> {
             log(message.getData(), UIWrapper.YELLOW);
             redraw();
+            return null;
+        },
+        ServerMessage.ServerMessageType.DONE,  message -> {
+            done = true;
             return null;
         }
     );
@@ -101,8 +107,13 @@ public class GameState extends ClientState implements Observer {
         return this;
     }
 
-    public ClientState quit(String[] args, ServerFacade facade) {
+    public ClientState quit(String[] args, ServerFacade facade)
+            throws Exception {
         previous.log("left game", UIWrapper.YELLOW);
+        var message = new UserGameCommand(UserGameCommand.CommandType.LEAVE,
+            authToken, gameID);
+        message.addData(username);
+        facade.sendWS(message);
         return previous;
     }
 
@@ -125,6 +136,9 @@ public class GameState extends ClientState implements Observer {
     );
     public ClientState move(String[] args, ServerFacade facade)
             throws Exception {
+        if (done) {
+            throw new Exception("game is finished");
+        }
         if (args.length < 2 || args.length > 3) {
             throw new Exception(
                 "expected two board positions (start and end), and an " +
@@ -162,6 +176,13 @@ public class GameState extends ClientState implements Observer {
 
     public ClientState resign(String[] args, ServerFacade facade)
             throws Exception {
+        if (done) {
+            throw new Exception("game is finished");
+        }
+        var command = new UserGameCommand(UserGameCommand.CommandType.RESIGN,
+            authToken, gameID);
+        command.addData(username);
+        facade.sendWS(command);
         return this;
     }
 

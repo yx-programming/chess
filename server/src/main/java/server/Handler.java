@@ -186,9 +186,9 @@ public class Handler {
         message = new ServerMessage(
             ServerMessage.ServerMessageType.NOTIFICATION);
         message.addData(name + " has joined");
-        if (gameInfo.getWhiteUser().equals(name)) {
+        if (name.equals(gameInfo.getWhiteUser())) {
             message.addData(" as white");
-        } else if (gameInfo.getBlackUser().equals(name)) {
+        } else if (name.equals(gameInfo.getBlackUser())) {
             message.addData(" as black");
         }
         sendToAll(message);
@@ -238,6 +238,9 @@ public class Handler {
             }
             
             if (done) {
+                message = new ServerMessage(
+                    ServerMessage.ServerMessageType.DONE);
+                sendToAll(message);
                 gameService.deleteGame(gameInfo);
             } else {
                 gameService.updateGame(gameInfo);
@@ -256,17 +259,39 @@ public class Handler {
 
     private void leave(WsMessageContext context, UserGameCommand command)
             throws Exception {
-    
+        authService.getAuthFromToken(command.getAuthToken());
+        var message = new ServerMessage(
+            ServerMessage.ServerMessageType.NOTIFICATION);
+        var username = command.getData();
+        authToContext.remove(command.getAuthToken());
+        context.closeSession();
+        message.addData(username + " left");
+        sendToAll(message);
     }
 
     private void resign(WsMessageContext context, UserGameCommand command)
             throws Exception {
-    
+        authService.getAuthFromToken(command.getAuthToken());
+        var name = command.getData();
+        var game = gameService.getGame(command.getGameID());
+        var otherName = game.getWhiteUser().equals(name) ? game.getBlackUser() :
+            game.getWhiteUser();
+        var message = new ServerMessage(
+            ServerMessage.ServerMessageType.NOTIFICATION);
+        message.addData(name + " resigned, " + otherName +
+            " wins!");
+        sendToAll(message);
+        gameService.deleteGame(game);
+        message = new ServerMessage(
+            ServerMessage.ServerMessageType.DONE);
+        sendToAll(message);
     }
     
     private Map<UserGameCommand.CommandType, Command> commands = Map.of(
         UserGameCommand.CommandType.CONNECT, this::connect,
-        UserGameCommand.CommandType.MAKE_MOVE, this::makeMove
+        UserGameCommand.CommandType.MAKE_MOVE, this::makeMove,
+        UserGameCommand.CommandType.LEAVE, this::leave,
+        UserGameCommand.CommandType.RESIGN, this::resign
     );
     public void wsMessage(WsMessageContext context) throws Exception {
         var command = new Gson().fromJson(context.message(),

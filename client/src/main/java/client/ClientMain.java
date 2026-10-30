@@ -43,6 +43,9 @@ public class ClientMain {
                 } else {
                     state.log("error: " + message, UIWrapper.RED);
                 }
+                if (message.contains("no line found")) {
+                    return;
+                }
             }
         } while (state != null);
     }
