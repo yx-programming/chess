@@ -32,6 +32,10 @@ public class ServerFacade {
         ws.subscribe(observer);
     }
 
+    public void unsubscribe(Observer observer) {
+        ws.unsubscribe(observer);
+    }
+
     public String register(String username, String password, String email)
             throws Exception {
         return extractAuthToken(httpRequest("user", "POST",
